@@ -14,6 +14,12 @@ anthropic>=0.40
 cerebras_cloud_sdk>=1.30
 mistralai>=1.5
 
+# Judges — local NLI models (HHEM, MiniCheck, AlignScore)
+# Pinned to transformers 4.x because HHEM-2.1-Open's custom class
+# targets the 4.x API (uses _tied_weights_keys, not all_tied_weights_keys).
+transformers>=4.46,<5.0
+torch>=2.0
+
 # Judges — local models (added when implemented)
 # transformers, sentence-transformers, torch — added in later commit
 # alignscore — added in later commit
