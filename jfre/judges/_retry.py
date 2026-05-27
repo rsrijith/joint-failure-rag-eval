@@ -24,6 +24,9 @@ _RETRYABLE_TOKENS = (
     "503",
     "504",
     "overloaded",
+    "timeout",      # httpx.ReadTimeout, requests.Timeout — network blip
+    "timed out",
+    "connection",   # ConnectionError, RemoteDisconnected
 )
 
 
