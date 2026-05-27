@@ -23,8 +23,8 @@ import json
 import sys
 from pathlib import Path
 
-from jfre.judges import claude_judge, mistral_judge, qwen_cerebras_judge
-from jfre.operators import entity_swap, numeric_drift
+from jfre.judges import claude_judge, hhem_judge, mistral_judge
+from jfre.operators import entity_swap, hedge_insertion, numeric_drift
 from jfre.seeds.hotpotqa import load
 
 
@@ -32,18 +32,21 @@ N_SEEDS = 50
 RAW_POOL = 200  # load more than N_SEEDS to allow rejection by the seed-faithful filter
 
 OPERATORS = [
-    ("entity_swap",   entity_swap),
-    ("numeric_drift", numeric_drift),
+    ("entity_swap",     entity_swap),
+    ("numeric_drift",   numeric_drift),
+    ("hedge_insertion", hedge_insertion),
 ]
 
+# Cerebras Qwen dropped from the preview pilot due to free-tier rate limits
+# that stall the pipeline. Qwen verdicts collected in earlier partial runs
+# remain in verdicts.jsonl and are picked up by the analyzer where present.
 JUDGES = [
     ("claude",  claude_judge),
-    ("qwen",    qwen_cerebras_judge),
     ("mistral", mistral_judge),
+    ("hhem",    hhem_judge),
 ]
 
-# Pilot uses 3-of-3 (100% agreement) as the strict seed-faithful threshold.
-# Full methodology with 8 judges uses 7-of-8 (87.5%).
+# 3 judges; require all to agree faithful on the clean gold.
 SEED_FAITHFUL_THRESHOLD = 3
 
 OUT_DIR = Path("results/preview_pilot")
@@ -157,12 +160,15 @@ def main() -> None:
                 verdicts_f.flush()
                 done_verdicts.add(key)
 
-            # Now collect ALL clean verdicts for this seed (including any from prior runs)
-            # by re-reading the file for this seed's clean rows
+            # Now collect clean verdicts for this seed, restricted to the judges
+            # currently in JUDGES (so dropped judges from prior runs don't influence
+            # the pre-filter decision).
+            current_judge_names = {mod.JUDGE_NAME for _name, mod in JUDGES}
             all_clean = [
                 json.loads(line) for line in VERDICTS_FILE.open()
                 if json.loads(line)["seed_id"] == seed.seed_id
                 and json.loads(line)["operator"] == "clean"
+                and json.loads(line)["judge"] in current_judge_names
             ]
             n_faithful = sum(1 for r in all_clean if r["verdict"] == "faithful")
             accepted = n_faithful >= SEED_FAITHFUL_THRESHOLD
@@ -229,11 +235,13 @@ def main() -> None:
                     v_f.write(json.dumps(_verdict_to_dict(v)) + "\n")
                 v_f.flush()
 
-                # Recover all 3 verdicts for the joint-failure print (from disk if any cached)
+                # Recover all current-judge verdicts for joint-failure print
+                current_judge_names = {mod.JUDGE_NAME for _name, mod in JUDGES}
                 all_pert_verdicts = [
                     json.loads(line) for line in VERDICTS_FILE.open()
                     if json.loads(line)["seed_id"] == seed.seed_id
                     and json.loads(line)["operator"] == op_name
+                    and json.loads(line)["judge"] in current_judge_names
                 ]
                 n_pert_faithful = sum(1 for r in all_pert_verdicts if r["verdict"] == "faithful")
                 joint = " <-- JOINT FAILURE" if n_pert_faithful == len(JUDGES) else ""
