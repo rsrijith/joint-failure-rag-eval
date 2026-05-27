@@ -1,0 +1,22 @@
+# Core
+python-dotenv>=1.0
+pydantic>=2.5
+
+# Data loading
+datasets>=3.0
+huggingface_hub>=0.27
+
+# Perturbation generation
+anthropic>=0.40
+
+# Judges — proprietary APIs
+# (cerebras_cloud_sdk and mistralai added when judges are implemented)
+
+# Judges — local models (added when implemented)
+# transformers, sentence-transformers, torch — added in later commit
+# alignscore — added in later commit
+
+# Utilities
+numpy>=2.0
+pandas>=2.2
+tqdm>=4.66

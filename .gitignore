@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment
+.env
+.env.local
+*.key
+
+# Data — never commit large or sensitive data
+data/raw/
+data/cache/
+data/perturbed/
+data/judged/
+*.parquet
+*.jsonl
+*.csv
+!data/sample/*.jsonl
+
+# Model caches
+.cache/
+hf_cache/
+~/.cache/huggingface/
+
+# Results — only commit final aggregated results
+results/raw/
+results/intermediate/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
