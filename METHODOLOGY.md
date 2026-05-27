@@ -10,9 +10,9 @@
 
 ## Research question
 
-Production RAG (retrieval-augmented generation) systems increasingly stack multiple automatic faithfulness judges — running RAGAS, HHEM, MiniCheck, AlignScore, FaithJudge, and LLM-as-judge variants in parallel and trusting the majority verdict, the worst-case verdict, or a learned aggregator. This stacking implicitly assumes the judges fail independently.
+Production RAG (retrieval-augmented generation) systems increasingly stack multiple automatic faithfulness judges — running RAGAS, HHEM, MiniCheck, AlignScore, FaithJudge, and LLM-as-judge variants from multiple organizations in parallel and trusting the majority verdict, the worst-case verdict, or a learned aggregator. This stacking implicitly assumes the judges fail independently.
 
-We measure the *joint-failure rate*: the fraction of perturbed RAG answers (in fact unfaithful) on which *every* judge in the ensemble returns a faithful verdict. We show that joint-failure rate, pairwise Cohen's κ across judges, and "attack universality" per perturbation operator are distinct and operationally relevant statistical objects that none of GroUSE, FaithJudge, BUMP, RAGTruth, or FaithBench currently compute.
+We measure the *joint-failure rate* across **8 deployed judges**: the fraction of perturbed RAG answers (in fact unfaithful) on which *every* judge in the ensemble returns a faithful verdict. We show that joint-failure rate, pairwise Cohen's κ across judges, and "attack universality" per perturbation operator are distinct and operationally relevant statistical objects that none of GroUSE, FaithJudge, BUMP, RAGTruth, or FaithBench currently compute.
 
 The hypothesis: single-edit perturbations designed to exploit specific judge-architecture shortcuts induce correlated failure across the ensemble, breaking the independence assumption at non-trivial rates.
 
@@ -57,23 +57,24 @@ Each perturbation is gated through an operator-specific automated rule. Perturba
 
 ---
 
-## Judge set (7 deployed faithfulness evaluators)
+## Judge set (8 deployed faithfulness evaluators)
 
 All judges run on the same perturbed inputs. Model snapshots and versions pinned at experiment time and committed to this repo.
 
-| Judge | Architecture | Source |
+| Judge | Architectural family | Source |
 |---|---|---|
 | RAGAS faithfulness | Claim decomposition + LLM-judge | Es et al., EACL 2024 Demos; PyPI `ragas` v0.2.x |
-| HHEM-2.1-Open | Fine-tuned NLI head | Vectara HuggingFace model card |
+| HHEM-2.1-Open | Fine-tuned NLI | Vectara HuggingFace model card |
 | MiniCheck-Flan-T5-L | Fine-tuned Flan-T5 fact-checker | Tang et al., EMNLP 2024 (arXiv 2404.10774) |
-| AlignScore-large | Unified alignment function | Zha et al., ACL 2023 |
-| FaithJudge | Few-shot LLM-as-judge with curated hallucination examples | Tamber, Bao et al., EMNLP 2025 Industry (arXiv 2505.04847); GitHub-released prompt + few-shot pool |
-| Claude 4 LLM-judge | Frontier LLM-as-judge | Anthropic API, `claude-opus-4-7` |
-| Gemini 2.x LLM-judge | Frontier LLM-as-judge | Google API, latest 2.x at experiment time |
+| AlignScore-large | Fine-tuned alignment function | Zha et al., ACL 2023 |
+| FaithJudge | Few-shot LLM-as-judge with curated hallucination examples | Tamber, Bao et al., EMNLP 2025 Industry (arXiv 2505.04847) |
+| Claude 4 LLM-judge | Frontier proprietary LLM | Anthropic API, claude-opus-4-7 |
+| Llama-3.3-70B LLM-judge | Frontier open-weights LLM | Meta, via Cerebras inference |
+| Mistral Large 2 LLM-judge | Frontier proprietary LLM | Mistral API |
 
-Claude and Gemini are reported as two distinct judges (not averaged) for more conservative joint-failure measurement.
+The four LLM-as-judge variants (FaithJudge, Claude, Llama, Mistral) span four distinct organizations and three model families. The three NLI-based judges (HHEM, MiniCheck, AlignScore) form an architecturally distinct cluster. This breakdown lets us compute Cohen's κ both within architectural family (do NLI judges share blind spots?) and across (do LLM-judges from different organizations correlate?).
 
-Future-work judges *not* evaluated here: Prometheus 2, G-Eval, Trulens-Groundedness.
+Future-work judges not evaluated here: Prometheus 2, G-Eval, Trulens-Groundedness, Gemini 2.x.
 
 ---
 
@@ -88,7 +89,7 @@ Both sources are multi-passage retrieval-grounded, so all 6 operators apply unif
 
 **Faithful seed = gold human-written answer.** We use the dataset's gold answer as the faithful seed (not an LLM-generated answer). Seeds are faithful by construction; judges sanity-check rather than establish truth.
 
-**Seed-faithful pre-filter:** ≥6 of the 7 judges agree the unperturbed gold answer is faithful. Examples that don't pass are discarded before perturbation.
+**Seed-faithful pre-filter:** ≥7 of the 8 judges agree the unperturbed gold answer is faithful. Examples that don't pass are discarded before perturbation.
 
 **English-only.** Multilingual evaluation deferred to future work.
 
@@ -104,11 +105,11 @@ For each operator $o$, perturbation $a' = \text{op}_o(a)$ applied to seed $(c, a
 
 1. **Per-judge false-negative rate (marginals).** For each judge $j_i$, $\text{FNR}_i(o) = P(j_i(c, a') = \text{faithful} \mid a' \text{ is in fact unfaithful}, \text{op} = o)$.
 
-2. **Joint-failure rate.** $\text{JFR}(o) = P(\bigcap_{i=1}^{7} \{j_i(c, a') = \text{faithful}\} \mid a' \text{ is in fact unfaithful}, \text{op} = o)$.
+2. **Joint-failure rate.** $\text{JFR}(o) = P(\bigcap_{i=1}^{8} \{j_i(c, a') = \text{faithful}\} \mid a' \text{ is in fact unfaithful}, \text{op} = o)$.
 
-3. **Attack universality.** $U(o) = \text{JFR}(o) - \prod_{i=1}^{7} \text{FNR}_i(o)$. Positive values indicate judges fail more together than the independence baseline predicts. Negative values indicate sub-independence (less likely but possible).
+3. **Attack universality.** $U(o) = \text{JFR}(o) - \prod_{i=1}^{8} \text{FNR}_i(o)$. Positive values indicate judges fail more together than the independence baseline predicts. Negative values indicate sub-independence (less likely but possible).
 
-4. **Pairwise Cohen's κ matrix (across judges, not annotators).** For each pair $(j_i, j_j)$, Cohen's κ on the binary faithful/unfaithful verdicts over the perturbed set. Reports the dependence structure directly, without the parametric independence assumption.
+4. **Pairwise Cohen's κ matrix (across judges, not annotators).** For each pair $(j_i, j_j)$, Cohen's κ on the binary faithful/unfaithful verdicts over the perturbed set. Reports the dependence structure directly, without the parametric independence assumption. Computed both pooled and stratified by architectural family (NLI cluster: HHEM/MiniCheck/AlignScore; LLM-judge cluster: FaithJudge/Claude/Llama/Mistral).
 
 5. **Stratification.** All four statistics reported per (operator × seed-source) cell. Cells with fewer than 50 samples reported as descriptive only, not for headline claims.
 
@@ -128,7 +129,7 @@ Perturbations failing any layer are excluded from headline numbers; rejection ra
 
 ## Go/no-go thresholds (pre-committed before pilot starts)
 
-Pilot: 50 examples × 2 cheapest operators (entity swap, numeric drift) × 7 judges, with author + 1 colleague labeling 30 examples.
+Pilot: 50 examples × 2 cheapest operators (entity swap, numeric drift) × 8 judges, with author + 1 colleague labeling 30 examples.
 
 **Continue with Candidate B (this paper) only if both:**
 - At least one operator shows joint-failure ≥ 25% on the pilot.
@@ -150,7 +151,7 @@ Pilot: 50 examples × 2 cheapest operators (entity swap, numeric drift) × 7 jud
 | Phase | Dates | Output |
 |---|---|---|
 | Setup | 2026-05-31 → 2026-06-01 | License audit complete; judge versions pinned; 2 operators implemented |
-| Pilot | 2026-06-02 → 2026-06-04 | 50-example pilot through 7 judges; 30 annotator pairs |
+| Pilot | 2026-06-02 → 2026-06-04 | 50-example pilot through 8 judges; 30 annotator pairs |
 | **Methodology commit (this document)** | **2026-06-04 evening** | **Public timestamped record** |
 | Build | 2026-06-07 → 2026-06-13 | Full 3,000-perturbation set generated and judged |
 | Validate + analyze | 2026-06-14 → 2026-06-20 | 600-sample human review; tables and figures locked |
@@ -161,7 +162,7 @@ Pilot: 50 examples × 2 cheapest operators (entity swap, numeric drift) × 7 jud
 
 ## Reproducibility commitments
 
-- All judge inferences saved with seed, prompt, and exact model snapshot (HuggingFace commit SHA for HHEM/MiniCheck/AlignScore; API model ID + date for Claude/Gemini; pinned RAGAS version; FaithJudge prompt + few-shot pool committed to this repo).
+- All judge inferences saved with seed, prompt, and exact model snapshot (HuggingFace commit SHA for HHEM/MiniCheck/AlignScore; API model ID + date for Claude/Llama-via-Cerebras/Mistral; pinned RAGAS version; FaithJudge prompt + few-shot pool committed to this repo).
 - Automated-rule implementations (one Python module per operator).
 - Perturbation seeds + accepted perturbations + per-judge verdicts released as a HuggingFace dataset post-acceptance.
 - Annotator instructions + disagreement-resolution log committed to this repo.
