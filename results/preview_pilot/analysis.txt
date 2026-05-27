@@ -1,6 +1,5 @@
-Loaded 603 verdicts, 207 perturbations.
-Judges with perturbed-answer verdicts (3): ['claude_opus_4_7', 'hhem_2_1_open', 'mistral_large_2']
-Excluded judges (no perturbed-answer verdicts): ['qwen3_235b_cerebras']
+Loaded 981 verdicts, 250 perturbations.
+Judges with perturbed-answer verdicts (5): ['claude_opus_4_7', 'hhem_2_1_open', 'minicheck_flan_t5_large', 'mistral_large_2', 'qwen3_235b_cerebras']
 Operators: ['distractor_parroting', 'entity_swap', 'hedge_insertion', 'numeric_drift', 'paraphrase_null']
 
 Note: paraphrase_null is a NEGATIVE CONTROL — perturbed answers are
@@ -10,47 +9,47 @@ semantically equivalent to gold and should be judged faithful. A high
 ======================================================================
 Perturbation suite: rule-pass rate per operator
 ======================================================================
-  distractor_parroting  34/ 41 passed ( 82.9%); 0 skipped, 7 rule-failed
-  entity_swap         34/ 42 passed ( 81.0%); 0 skipped, 8 rule-failed
-  hedge_insertion     41/ 41 passed (100.0%); 0 skipped, 0 rule-failed
-  numeric_drift        6/ 42 passed ( 14.3%); 34 skipped, 2 rule-failed
-  paraphrase_null      4/ 41 passed (  9.8%); 0 skipped, 37 rule-failed
+  distractor_parroting  43/ 50 passed ( 86.0%); 0 skipped, 7 rule-failed
+  entity_swap         42/ 50 passed ( 84.0%); 0 skipped, 8 rule-failed
+  hedge_insertion     50/ 50 passed (100.0%); 0 skipped, 0 rule-failed
+  numeric_drift        7/ 50 passed ( 14.0%); 41 skipped, 2 rule-failed
+  paraphrase_null      5/ 50 passed ( 10.0%); 0 skipped, 45 rule-failed
 
 ======================================================================
 Per-judge false-negative rate (marginals)
 ======================================================================
 FNR = fraction of perturbations the judge called 'faithful' (missed unfaithful).
 
-operator           | claude_opus_4_7 | hhem_2_1_open | mistral_large_2
-------------------------------------------------------
-distractor_parroting |  5/34 (  15%) | 33/34 (  97%) |  5/34 (  15%)
-entity_swap        |  0/34 (   0%) |  5/34 (  15%) |  0/34 (   0%)
-hedge_insertion    |  0/41 (   0%) |  3/41 (   7%) |  3/41 (   7%)
-numeric_drift      |  0/ 6 (   0%) |  1/ 6 (  17%) |  0/ 6 (   0%)
-paraphrase_null    |  4/ 4 ( 100%) |  4/ 4 ( 100%) |  4/ 4 ( 100%)
+operator           | claude_opus_4_7 | hhem_2_1_open | minicheck_flan_t5_large | mistral_large_2 | qwen3_235b_cerebras
+----------------------------------------------------------------------------
+distractor_parroting |  7/43 (  16%) | 42/43 (  98%) |  7/43 (  16%) |  6/43 (  14%) |  3/43 (   7%)
+entity_swap        |  0/42 (   0%) |  6/42 (  14%) |  3/42 (   7%) |  0/42 (   0%) |  1/42 (   2%)
+hedge_insertion    |  0/50 (   0%) |  3/50 (   6%) |  2/50 (   4%) |  4/50 (   8%) |  2/50 (   4%)
+numeric_drift      |  0/ 7 (   0%) |  1/ 7 (  14%) |  3/ 7 (  43%) |  0/ 7 (   0%) |  0/ 7 (   0%)
+paraphrase_null    |  5/ 5 ( 100%) |  5/ 5 ( 100%) |  5/ 5 ( 100%) |  5/ 5 ( 100%) |  5/ 5 ( 100%)
 
 ======================================================================
 Joint-failure rate (ALL judges call perturbed answer 'faithful')
 ======================================================================
-Threshold for joint failure on this preview pilot: ALL 3 judges say 'faithful'.
+Threshold for joint failure on this preview pilot: ALL 5 judges say 'faithful'.
 
-  distractor_parroting joint failure: 3/34 = 8.8%
-                     independence baseline (∏ FNRs): 2.10%
-                     attack universality: +6.72pp
+  distractor_parroting joint failure: 1/43 = 2.3%
+                     independence baseline (∏ FNRs): 0.03%
+                     attack universality: +2.30pp
 
-  entity_swap        joint failure: 0/34 = 0.0%
+  entity_swap        joint failure: 0/42 = 0.0%
                      independence baseline (∏ FNRs): 0.00%
                      attack universality: +0.00pp
 
-  hedge_insertion    joint failure: 0/41 = 0.0%
+  hedge_insertion    joint failure: 0/50 = 0.0%
                      independence baseline (∏ FNRs): 0.00%
                      attack universality: +0.00pp
 
-  numeric_drift      joint failure: 0/6 = 0.0%
+  numeric_drift      joint failure: 0/7 = 0.0%
                      independence baseline (∏ FNRs): 0.00%
                      attack universality: +0.00pp
 
-  paraphrase_null    joint failure: 4/4 = 100.0%
+  paraphrase_null    joint failure: 5/5 = 100.0%
                      independence baseline (∏ FNRs): 100.00%
                      attack universality: +0.00pp
 
@@ -59,13 +58,15 @@ Pairwise Cohen's kappa across judges (on perturbed answers, pooled across operat
 ======================================================================
 Higher kappa = judges agree more (positive correlation in their verdicts).
 
-Aligned on 119 (seed, operator) cells.
+Aligned on 147 (seed, operator) cells.
 
-           | claude_opus_4_7 | hhem_2_1_open | mistral_large_2
-----------------------------------------------------
-claude_opus_4_7 |      -     | +0.188     | +0.635    
-hhem_2_1_open | +0.188     |      -     | +0.179    
-mistral_large_2 | +0.635     | +0.179     |      -    
+           | claude_opus_4_7 | hhem_2_1_open | minicheck_flan_t5_large | mistral_large_2 | qwen3_235b_cerebras
+------------------------------------------------------------------------------
+claude_opus_4_7 |      -     | +0.213     | +0.374     | +0.633     | +0.670    
+hhem_2_1_open | +0.213     |      -     | +0.138     | +0.172     | +0.126    
+minicheck_flan_t5_large | +0.374     | +0.138     |      -     | +0.256     | +0.322    
+mistral_large_2 | +0.633     | +0.172     | +0.256     |      -     | +0.747    
+qwen3_235b_cerebras | +0.670     | +0.126     | +0.322     | +0.747     |      -    
 
 ======================================================================
 Day 5 GO/NO-GO check
@@ -73,7 +74,7 @@ Day 5 GO/NO-GO check
 Pre-registered criterion: at least one ADVERSARIAL operator with joint-failure >= 25%.
 paraphrase_null is excluded — it is a negative control, not an attack.
 
-  distractor_parroting   8.8%  fail
+  distractor_parroting   2.3%  fail
   entity_swap          0.0%  fail
   hedge_insertion      0.0%  fail
   numeric_drift        0.0%  fail
