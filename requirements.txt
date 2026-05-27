@@ -7,11 +7,12 @@ requests>=2.30
 datasets>=3.0
 huggingface_hub>=0.27
 
-# Perturbation generation
+# Perturbation generation + Claude judge
 anthropic>=0.40
 
-# Judges — proprietary APIs
-# (cerebras_cloud_sdk and mistralai added when judges are implemented)
+# Judges — proprietary / open-via-API
+cerebras_cloud_sdk>=1.30
+mistralai>=1.5
 
 # Judges — local models (added when implemented)
 # transformers, sentence-transformers, torch — added in later commit
