@@ -28,7 +28,7 @@ _RETRYABLE_TOKENS = (
 
 
 def retry_on_rate_limit(
-    max_retries: int = 4,
+    max_retries: int = 8,
     initial_delay: float = 2.0,
     max_delay: float = 60.0,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
