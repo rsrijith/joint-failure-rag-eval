@@ -23,7 +23,7 @@ import json
 import sys
 from pathlib import Path
 
-from jfre.judges import claude_judge, hhem_judge, mistral_judge
+from jfre.judges import claude_judge, hhem_judge, mistral_judge, qwen_cerebras_judge
 from jfre.operators import (
     distractor_parroting,
     entity_swap,
@@ -45,16 +45,19 @@ OPERATORS = [
     ("paraphrase_null",      paraphrase_null),
 ]
 
-# Cerebras Qwen dropped from the preview pilot due to free-tier rate limits
-# that stall the pipeline. Qwen verdicts collected in earlier partial runs
-# remain in verdicts.jsonl and are picked up by the analyzer where present.
+# 4-judge setup: 1 NLI (HHEM) + 3 LLM-judges from different organizations
+# (Anthropic, Alibaba via Cerebras, Mistral). Qwen via Cerebras is throttled
+# at 1.5s/call self-imposed to avoid free-tier queue-exceeded errors.
 JUDGES = [
     ("claude",  claude_judge),
     ("mistral", mistral_judge),
     ("hhem",    hhem_judge),
+    ("qwen",    qwen_cerebras_judge),
 ]
 
-# 3 judges; require all to agree faithful on the clean gold.
+# Pre-filter threshold: was applied during phase 1 when seeds were filtered.
+# Cached "accepted" decisions are reused on resume, so this value only affects
+# any *new* seeds processed (none expected since N_SEEDS already reached).
 SEED_FAITHFUL_THRESHOLD = 3
 
 OUT_DIR = Path("results/preview_pilot")

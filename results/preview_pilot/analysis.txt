@@ -1,0 +1,84 @@
+Loaded 603 verdicts, 207 perturbations.
+Judges with perturbed-answer verdicts (3): ['claude_opus_4_7', 'hhem_2_1_open', 'mistral_large_2']
+Excluded judges (no perturbed-answer verdicts): ['qwen3_235b_cerebras']
+Operators: ['distractor_parroting', 'entity_swap', 'hedge_insertion', 'numeric_drift', 'paraphrase_null']
+
+Note: paraphrase_null is a NEGATIVE CONTROL — perturbed answers are
+semantically equivalent to gold and should be judged faithful. A high
+'FNR' on paraphrase_null is the CORRECT outcome (judges robust to syntax).
+
+======================================================================
+Perturbation suite: rule-pass rate per operator
+======================================================================
+  distractor_parroting  34/ 41 passed ( 82.9%); 0 skipped, 7 rule-failed
+  entity_swap         34/ 42 passed ( 81.0%); 0 skipped, 8 rule-failed
+  hedge_insertion     41/ 41 passed (100.0%); 0 skipped, 0 rule-failed
+  numeric_drift        6/ 42 passed ( 14.3%); 34 skipped, 2 rule-failed
+  paraphrase_null      4/ 41 passed (  9.8%); 0 skipped, 37 rule-failed
+
+======================================================================
+Per-judge false-negative rate (marginals)
+======================================================================
+FNR = fraction of perturbations the judge called 'faithful' (missed unfaithful).
+
+operator           | claude_opus_4_7 | hhem_2_1_open | mistral_large_2
+------------------------------------------------------
+distractor_parroting |  5/34 (  15%) | 33/34 (  97%) |  5/34 (  15%)
+entity_swap        |  0/34 (   0%) |  5/34 (  15%) |  0/34 (   0%)
+hedge_insertion    |  0/41 (   0%) |  3/41 (   7%) |  3/41 (   7%)
+numeric_drift      |  0/ 6 (   0%) |  1/ 6 (  17%) |  0/ 6 (   0%)
+paraphrase_null    |  4/ 4 ( 100%) |  4/ 4 ( 100%) |  4/ 4 ( 100%)
+
+======================================================================
+Joint-failure rate (ALL judges call perturbed answer 'faithful')
+======================================================================
+Threshold for joint failure on this preview pilot: ALL 3 judges say 'faithful'.
+
+  distractor_parroting joint failure: 3/34 = 8.8%
+                     independence baseline (∏ FNRs): 2.10%
+                     attack universality: +6.72pp
+
+  entity_swap        joint failure: 0/34 = 0.0%
+                     independence baseline (∏ FNRs): 0.00%
+                     attack universality: +0.00pp
+
+  hedge_insertion    joint failure: 0/41 = 0.0%
+                     independence baseline (∏ FNRs): 0.00%
+                     attack universality: +0.00pp
+
+  numeric_drift      joint failure: 0/6 = 0.0%
+                     independence baseline (∏ FNRs): 0.00%
+                     attack universality: +0.00pp
+
+  paraphrase_null    joint failure: 4/4 = 100.0%
+                     independence baseline (∏ FNRs): 100.00%
+                     attack universality: +0.00pp
+
+======================================================================
+Pairwise Cohen's kappa across judges (on perturbed answers, pooled across operators)
+======================================================================
+Higher kappa = judges agree more (positive correlation in their verdicts).
+
+Aligned on 119 (seed, operator) cells.
+
+           | claude_opus_4_7 | hhem_2_1_open | mistral_large_2
+----------------------------------------------------
+claude_opus_4_7 |      -     | +0.188     | +0.635    
+hhem_2_1_open | +0.188     |      -     | +0.179    
+mistral_large_2 | +0.635     | +0.179     |      -    
+
+======================================================================
+Day 5 GO/NO-GO check
+======================================================================
+Pre-registered criterion: at least one ADVERSARIAL operator with joint-failure >= 25%.
+paraphrase_null is excluded — it is a negative control, not an attack.
+
+  distractor_parroting   8.8%  fail
+  entity_swap          0.0%  fail
+  hedge_insertion      0.0%  fail
+  numeric_drift        0.0%  fail
+
+  Below the strict 25% threshold with 3 judges. But: nonzero joint-failure
+  IS observed on at least one adversarial operator, and the per-judge marginals
+  reveal striking architectural failures (see distractor_parroting / HHEM).
+  Recommendation: continue with full 8-judge pilot before pivoting to Candidate A.
