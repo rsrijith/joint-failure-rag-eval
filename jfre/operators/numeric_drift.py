@@ -133,7 +133,23 @@ def _validate(
 
 
 def generate(seed: Seed) -> Perturbation:
-    """Generate a numeric-drift perturbation for one seed."""
+    """Generate a numeric-drift perturbation for one seed.
+
+    If the gold answer contains no numeric tokens, the operator is
+    inapplicable; we skip and return a rule_passed=False perturbation with
+    a clear "skipped" note so the caller can distinguish operator-inapplicable
+    from operator-failed.
+    """
+    if not _NUMBER_RE.search(seed.gold_answer):
+        return Perturbation(
+            seed_id=seed.seed_id,
+            operator=OPERATOR_NAME,
+            perturbed_answer="",
+            edit_diff={},
+            rule_passed=False,
+            rule_notes="skipped: gold answer contains no numeric tokens",
+        )
+
     prompt = _PROMPT.format(
         question=seed.question,
         passages=_format_passages(seed.passages),
