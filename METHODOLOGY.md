@@ -69,12 +69,14 @@ All judges run on the same perturbed inputs. Model snapshots and versions pinned
 | AlignScore-large | Fine-tuned alignment function | Zha et al., ACL 2023 |
 | FaithJudge | Few-shot LLM-as-judge with curated hallucination examples | Tamber, Bao et al., EMNLP 2025 Industry (arXiv 2505.04847) |
 | Claude 4 LLM-judge | Frontier proprietary LLM | Anthropic API, claude-opus-4-7 |
-| Llama-3.3-70B LLM-judge | Frontier open-weights LLM | Meta, via Cerebras inference |
-| Mistral Large 2 LLM-judge | Frontier proprietary LLM | Mistral API |
+| Qwen3-235B LLM-judge | Frontier open-weights MoE | Alibaba qwen-3-235b-a22b-instruct-2507, via Cerebras inference |
+| Mistral Large 2 LLM-judge | Frontier proprietary LLM | Mistral API, mistral-large-latest |
 
-The four LLM-as-judge variants (FaithJudge, Claude, Llama, Mistral) span four distinct organizations and three model families. The three NLI-based judges (HHEM, MiniCheck, AlignScore) form an architecturally distinct cluster. This breakdown lets us compute Cohen's κ both within architectural family (do NLI judges share blind spots?) and across (do LLM-judges from different organizations correlate?).
+The four LLM-as-judge variants (FaithJudge, Claude, Qwen, Mistral) span four distinct organizations (Vectara, Anthropic, Alibaba, Mistral) and three model-availability families (proprietary closed-weights, prompted few-shot, open-weights MoE). The three NLI-based judges (HHEM, MiniCheck, AlignScore) form an architecturally distinct cluster. This breakdown lets us compute Cohen's κ both within architectural family (do NLI judges share blind spots?) and across (do LLM-judges from different organizations correlate?).
 
-Future-work judges not evaluated here: Prometheus 2, G-Eval, Trulens-Groundedness, Gemini 2.x.
+Qwen3-235B was substituted for Llama-3.3-70B (the originally planned open-weights judge) because Cerebras's free inference tier hosts Qwen3-235B, GPT-OSS-120B, GLM-4.7, and Llama-3.1-8B but not Llama-3.3-70B. Qwen3-235B is a 235B-parameter MoE model (Alibaba, July 2025) that benchmarks at or above Llama-3.3-70B on most evaluations; the substitution preserves the design intent of having a frontier open-weights LLM-judge from a different organization than Anthropic.
+
+Future-work judges not evaluated here: Prometheus 2, G-Eval, Trulens-Groundedness, Gemini 2.x, Llama-3.3-70B.
 
 ---
 
