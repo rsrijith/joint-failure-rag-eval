@@ -1,6 +1,7 @@
 # Core
 python-dotenv>=1.0
 pydantic>=2.5
+requests>=2.30
 
 # Data loading
 datasets>=3.0
