@@ -24,7 +24,13 @@ import sys
 from pathlib import Path
 
 from jfre.judges import claude_judge, hhem_judge, mistral_judge
-from jfre.operators import entity_swap, hedge_insertion, numeric_drift
+from jfre.operators import (
+    distractor_parroting,
+    entity_swap,
+    hedge_insertion,
+    numeric_drift,
+    paraphrase_null,
+)
 from jfre.seeds.hotpotqa import load
 
 
@@ -32,9 +38,11 @@ N_SEEDS = 50
 RAW_POOL = 200  # load more than N_SEEDS to allow rejection by the seed-faithful filter
 
 OPERATORS = [
-    ("entity_swap",     entity_swap),
-    ("numeric_drift",   numeric_drift),
-    ("hedge_insertion", hedge_insertion),
+    ("entity_swap",          entity_swap),
+    ("numeric_drift",        numeric_drift),
+    ("hedge_insertion",      hedge_insertion),
+    ("distractor_parroting", distractor_parroting),
+    ("paraphrase_null",      paraphrase_null),
 ]
 
 # Cerebras Qwen dropped from the preview pilot due to free-tier rate limits
