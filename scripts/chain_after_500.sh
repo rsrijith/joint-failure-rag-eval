@@ -32,11 +32,19 @@ git commit -m "8-judge x 500-seed pilot complete (5 operators)" 2>/dev/null
 git push 2>/dev/null
 echo "[chain] $(date) — 500-seed results committed"
 
-# 3. Launch the citation_relocation pilot.
-echo "[chain] $(date) — launching citation_relocation pilot"
-nohup python -u scripts/run_citation_relocation_pilot.py \
-    > /tmp/pilot_citation_relocation.log 2>&1 &
-CR_PID=$!
-disown
-echo "$CR_PID" > /tmp/citation_relocation_pid
-echo "[chain] $(date) — citation_relocation pilot pid=$CR_PID, log /tmp/pilot_citation_relocation.log"
+# 3. Run citation_relocation pilot SYNCHRONOUSLY. This means the chain
+#    process only exits after both pilots are done, so a single watcher
+#    on the chain PID suffices.
+echo "[chain] $(date) — running citation_relocation pilot (synchronous)"
+python -u scripts/run_citation_relocation_pilot.py \
+    > /tmp/pilot_citation_relocation.log 2>&1
+CR_EXIT=$?
+echo "[chain] $(date) — citation_relocation pilot exited with code $CR_EXIT"
+
+# 4. Commit + push the citation_relocation results regardless of exit code,
+#    so any partial progress is captured.
+git add results/citation_relocation_pilot/ data/cache/expertqa_cited.jsonl 2>/dev/null
+git commit -m "citation_relocation pilot complete (6th operator, ExpertQA only)" 2>/dev/null
+git push 2>/dev/null
+echo "[chain] $(date) — citation_relocation results committed"
+echo "[chain] $(date) — DONE. Combined 6-op analysis can now run."
