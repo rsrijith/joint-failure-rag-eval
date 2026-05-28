@@ -1,10 +1,11 @@
-"""Qwen3-235B LLM-judge via Cerebras inference API.
+"""GLM-4.7 LLM-judge via Cerebras inference API.
 
-Originally planned as Llama-3.3-70B, substituted because Cerebras's free
-tier does not host the 70B Llama. Qwen3-235B-A22B-Instruct-2507 is a
-frontier-tier Mixture-of-Experts model from Alibaba — same role in the
-ensemble (open-weights LLM-judge from a different organization than
-Anthropic) and benchmarks at or above Llama-3.3-70B on most evaluations.
+Cerebras's free tier model menu has churned: originally Llama-3.3-70B
+(never available), substituted with Qwen3-235B which Cerebras retired
+between pilot iterations. GLM-4.7 (Z.AI, Chinese frontier model) is the
+remaining frontier-tier open-weights option. Qwen verdicts from earlier
+runs remain in verdicts.jsonl under the "qwen3_235b_cerebras" name; new
+calls record under "glm_4_7_cerebras".
 """
 
 from __future__ import annotations
@@ -21,8 +22,8 @@ from jfre.judges._retry import retry_on_rate_limit
 from jfre.types import JudgeVerdict, OperatorName, Seed
 
 
-JUDGE_NAME = "qwen3_235b_cerebras"
-_MODEL = "qwen-3-235b-a22b-instruct-2507"
+JUDGE_NAME = "glm_4_7_cerebras"
+_MODEL = "zai-glm-4.7"
 
 # Self-imposed rate limit. Cerebras free tier "queue_exceeded" errors fire
 # when too many concurrent requests are queued, so we pace ourselves to stay
@@ -58,11 +59,14 @@ def score(
 
     _throttle()
 
+    # GLM-4.7 is a reasoning model that emits chain-of-thought in a separate
+    # `reasoning` field but still consumes max_tokens for it. 512 truncates
+    # before content is produced; bump to 2048 to leave room.
     @retry_on_rate_limit()
     def _call():
         return _client().chat.completions.create(
             model=_MODEL,
-            max_tokens=512,
+            max_tokens=2048,
             temperature=0,
             messages=[
                 {"role": "system", "content": "You are a careful faithfulness judge. Respond with valid JSON only."},

@@ -24,11 +24,14 @@ import sys
 from pathlib import Path
 
 from jfre.judges import (
+    alignscore_judge,
     claude_judge,
+    faithjudge,
+    glm_cerebras_judge,
     hhem_judge,
     minicheck_judge,
     mistral_judge,
-    qwen_cerebras_judge,
+    ragas_judge,
 )
 from jfre.operators import (
     distractor_parroting,
@@ -37,11 +40,19 @@ from jfre.operators import (
     numeric_drift,
     paraphrase_null,
 )
-from jfre.seeds.hotpotqa import load
+from jfre.seeds.expertqa import load as load_expertqa
+from jfre.seeds.hotpotqa import load as load_hotpotqa
 
 
-N_SEEDS = 50
-RAW_POOL = 200  # load more than N_SEEDS to allow rejection by the seed-faithful filter
+# Per-source seed targets and raw pool sizes.
+# Existing seeds.jsonl already has 50 accepted HotpotQA seeds from earlier runs,
+# so the HotpotQA pass will reuse cached decisions and exit fast.
+SOURCE_TARGETS: list[tuple[str, int, int, object]] = [
+    ("hotpotqa", 50, 200, load_hotpotqa),
+    ("expertqa", 25,  75, load_expertqa),
+]
+N_SEEDS = sum(t[1] for t in SOURCE_TARGETS)  # 75 total accepted
+RAW_POOL = sum(t[2] for t in SOURCE_TARGETS)  # legacy field; unused below
 
 OPERATORS = [
     ("entity_swap",          entity_swap),
@@ -51,23 +62,29 @@ OPERATORS = [
     ("paraphrase_null",      paraphrase_null),
 ]
 
-# 5-judge setup: 2 NLI/fact-checkers (HHEM, MiniCheck) + 3 LLM-judges
-# from different organizations (Anthropic, Alibaba via Cerebras, Mistral).
-# Qwen via Cerebras throttled at 1.5s/call to avoid free-tier queue errors.
-# MiniCheck has calibration concerns (rates clean Acme answer as 0.218 < 0.5
-# threshold); analyzed for per-operator FNR but flagged in §8 limitations.
+# Full 8-judge ensemble:
+#   3 NLI/fact-checkers: HHEM-2.1-Open, MiniCheck-Flan-T5-L, AlignScore-large
+#   1 claim-decomposition: RAGAS-style (Claude Sonnet backing)
+#   4 LLM-as-judges:
+#     - Claude 4 (Anthropic)
+#     - Mistral Large 2 (Mistral)
+#     - GLM-4.7 via Cerebras (Z.AI)
+#     - FaithJudge-style (Claude Sonnet with Vectara hallucination few-shot)
 JUDGES = [
-    ("claude",     claude_judge),
-    ("mistral",    mistral_judge),
-    ("hhem",       hhem_judge),
-    ("qwen",       qwen_cerebras_judge),
-    ("minicheck",  minicheck_judge),
+    ("claude",      claude_judge),
+    ("mistral",     mistral_judge),
+    ("hhem",        hhem_judge),
+    ("glm",         glm_cerebras_judge),
+    ("minicheck",   minicheck_judge),
+    ("alignscore",  alignscore_judge),
+    ("ragas",       ragas_judge),
+    ("faithjudge",  faithjudge),
 ]
 
-# Pre-filter threshold: was applied during phase 1 when seeds were filtered.
-# Cached "accepted" decisions are reused on resume, so this value only affects
-# any *new* seeds processed (none expected since N_SEEDS already reached).
-SEED_FAITHFUL_THRESHOLD = 3
+# Pre-filter threshold. With 5 judges, 4/5 = 80% mirrors the methodology's
+# 7/8 = 87.5% (closest match without being 100%). Cached HotpotQA seeds from
+# the earlier 3-of-3 ensemble are stricter, so their accepted flags still hold.
+SEED_FAITHFUL_THRESHOLD = 4
 
 OUT_DIR = Path("results/preview_pilot")
 SEEDS_FILE = OUT_DIR / "seeds.jsonl"
@@ -143,74 +160,73 @@ def main() -> None:
     print(f"Resuming. Already done: {len(done_seeds)} seeds filtered, "
           f"{len(done_perturbations)} perturbations, {len(done_verdicts)} judge verdicts.\n")
 
-    print(f"Loading up to {RAW_POOL} raw HotpotQA seeds (need {N_SEEDS} that pass seed-faithful filter)...")
-    raw_seeds = list(load(n=RAW_POOL))
-    print(f"Loaded {len(raw_seeds)} raw seeds.\n")
-
-    # ---- Phase 1: seed-faithful pre-filter (with resumability)
-    print(f"Phase 1: seed-faithful pre-filter (threshold: {SEED_FAITHFUL_THRESHOLD}/3 judges say faithful)\n")
+    # ---- Phase 1: per-source seed-faithful pre-filter (with resumability)
     accepted_seeds: list = []
+    current_judge_names = {mod.JUDGE_NAME for _name, mod in JUDGES}
 
-    # Open append-mode for resumability
-    with SEEDS_FILE.open("a") as seeds_f, VERDICTS_FILE.open("a") as verdicts_f:
-        for i, seed in enumerate(raw_seeds):
-            if len(accepted_seeds) >= N_SEEDS:
-                break
+    for source_name, target, pool, loader in SOURCE_TARGETS:
+        print(f"\nPhase 1 [{source_name}]: target {target} accepted from a pool of {pool} raw")
+        raw_seeds = list(loader(n=pool))
+        print(f"Loaded {len(raw_seeds)} raw {source_name} seeds.")
 
-            # If we already filtered this seed in a prior run, reuse its decision
-            if seed.seed_id in done_seeds:
-                rec = done_seeds[seed.seed_id]
-                if rec["accepted"]:
-                    accepted_seeds.append(seed)
-                    print(f"  [{i+1:3d}] {seed.seed_id[:35]:35s} (cached) {rec['n_judges_faithful']}/3 -> ACCEPT")
-                else:
-                    print(f"  [{i+1:3d}] {seed.seed_id[:35]:35s} (cached) {rec['n_judges_faithful']}/3 -> reject")
-                continue
+        source_accepted = 0
+        with SEEDS_FILE.open("a") as seeds_f, VERDICTS_FILE.open("a") as verdicts_f:
+            for i, seed in enumerate(raw_seeds):
+                if source_accepted >= target:
+                    break
 
-            # Score clean gold answer with all 3 judges (skip ones already done)
-            clean_verdicts = []
-            for _name, mod in JUDGES:
-                key = (seed.seed_id, "clean", mod.JUDGE_NAME)
-                if key in done_verdicts:
-                    # already have this verdict from a prior partial run; will recover from disk below
+                # If cached, reuse decision
+                if seed.seed_id in done_seeds:
+                    rec = done_seeds[seed.seed_id]
+                    if rec["accepted"]:
+                        accepted_seeds.append(seed)
+                        source_accepted += 1
+                        print(f"  [{i+1:3d}] {seed.seed_id[:35]:35s} (cached) {rec['n_judges_faithful']}/{len(JUDGES)} -> ACCEPT")
+                    else:
+                        print(f"  [{i+1:3d}] {seed.seed_id[:35]:35s} (cached) {rec['n_judges_faithful']}/{len(JUDGES)} -> reject")
                     continue
-                v = mod.score(seed, seed.gold_answer, operator="clean")
-                clean_verdicts.append(v)
-                verdicts_f.write(json.dumps(_verdict_to_dict(v)) + "\n")
-                verdicts_f.flush()
-                done_verdicts.add(key)
 
-            # Now collect clean verdicts for this seed, restricted to the judges
-            # currently in JUDGES (so dropped judges from prior runs don't influence
-            # the pre-filter decision).
-            current_judge_names = {mod.JUDGE_NAME for _name, mod in JUDGES}
-            all_clean = [
-                json.loads(line) for line in VERDICTS_FILE.open()
-                if json.loads(line)["seed_id"] == seed.seed_id
-                and json.loads(line)["operator"] == "clean"
-                and json.loads(line)["judge"] in current_judge_names
-            ]
-            n_faithful = sum(1 for r in all_clean if r["verdict"] == "faithful")
-            accepted = n_faithful >= SEED_FAITHFUL_THRESHOLD
+                # Fresh: score clean gold with each judge not already cached
+                for _name, mod in JUDGES:
+                    key = (seed.seed_id, "clean", mod.JUDGE_NAME)
+                    if key in done_verdicts:
+                        continue
+                    v = mod.score(seed, seed.gold_answer, operator="clean")
+                    verdicts_f.write(json.dumps(_verdict_to_dict(v)) + "\n")
+                    verdicts_f.flush()
+                    done_verdicts.add(key)
 
-            seed_rec = {
-                "seed_id": seed.seed_id,
-                "source": seed.source,
-                "question": seed.question,
-                "gold_answer": seed.gold_answer,
-                "metadata": seed.metadata,
-                "n_judges_faithful": n_faithful,
-                "accepted": accepted,
-            }
-            seeds_f.write(json.dumps(seed_rec) + "\n")
-            seeds_f.flush()
-            done_seeds[seed.seed_id] = seed_rec
+                # Tally clean verdicts (only from current judge set)
+                all_clean = [
+                    json.loads(line) for line in VERDICTS_FILE.open()
+                    if json.loads(line)["seed_id"] == seed.seed_id
+                    and json.loads(line)["operator"] == "clean"
+                    and json.loads(line)["judge"] in current_judge_names
+                ]
+                n_faithful = sum(1 for r in all_clean if r["verdict"] == "faithful")
+                accepted = n_faithful >= SEED_FAITHFUL_THRESHOLD
 
-            print(f"  [{i+1:3d}] {seed.seed_id[:35]:35s} {n_faithful}/3 faithful  {'ACCEPT' if accepted else 'reject'}")
-            if accepted:
-                accepted_seeds.append(seed)
+                seed_rec = {
+                    "seed_id": seed.seed_id,
+                    "source": seed.source,
+                    "question": seed.question,
+                    "gold_answer": seed.gold_answer,
+                    "metadata": seed.metadata,
+                    "n_judges_faithful": n_faithful,
+                    "accepted": accepted,
+                }
+                seeds_f.write(json.dumps(seed_rec) + "\n")
+                seeds_f.flush()
+                done_seeds[seed.seed_id] = seed_rec
 
-    print(f"\nPhase 1 complete: {len(accepted_seeds)} accepted seeds.\n")
+                print(f"  [{i+1:3d}] {seed.seed_id[:35]:35s} {n_faithful}/{len(JUDGES)} faithful  {'ACCEPT' if accepted else 'reject'}")
+                if accepted:
+                    accepted_seeds.append(seed)
+                    source_accepted += 1
+
+        print(f"[{source_name}] phase 1: accepted {source_accepted} (target {target})")
+
+    print(f"\nPhase 1 complete: {len(accepted_seeds)} accepted seeds total.\n")
 
     # ---- Phase 2: generate perturbations + score with judges (resumable)
     print(f"Phase 2: generate perturbations + run judges on {len(accepted_seeds)} accepted seeds.\n")

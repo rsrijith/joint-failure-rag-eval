@@ -9,14 +9,14 @@ Run from repo root:
 
 from __future__ import annotations
 
-from jfre.judges import claude_judge, mistral_judge, qwen_cerebras_judge
+from jfre.judges import claude_judge, glm_cerebras_judge, mistral_judge
 from jfre.operators.entity_swap import generate as entity_swap_generate
 from jfre.seeds.hotpotqa import load
 
 
 JUDGES = [
     ("claude",  claude_judge),
-    ("qwen",    qwen_cerebras_judge),
+    ("glm",     glm_cerebras_judge),
     ("mistral", mistral_judge),
 ]
 
