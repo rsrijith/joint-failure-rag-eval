@@ -61,6 +61,7 @@ def score(
     answer_to_judge: str,
     operator: OperatorName | Literal["clean"],
 ) -> JudgeVerdict:
+    global _quota_dead
     if _quota_dead:
         raise RuntimeError("glm_cerebras quota_dead (skipping for rest of session)")
 
@@ -86,7 +87,6 @@ def score(
     try:
         response = _call()
     except Exception as e:
-        global _quota_dead
         if any(m in str(e).lower() for m in _QUOTA_DEAD_MARKERS):
             _quota_dead = True
         raise
