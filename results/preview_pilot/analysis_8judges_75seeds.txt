@@ -1,0 +1,90 @@
+Loaded 2667 verdicts, 375 perturbations.
+Judges with perturbed-answer verdicts (10): ['alignscore_large', 'claude_opus_4_7', 'claude_sonnet_4_6', 'faithjudge_style_sonnet', 'glm_4_7_cerebras', 'hhem_2_1_open', 'minicheck_flan_t5_large', 'mistral_large_2', 'qwen3_235b_cerebras', 'ragas_style_sonnet']
+Operators: ['distractor_parroting', 'entity_swap', 'hedge_insertion', 'numeric_drift', 'paraphrase_null']
+
+Note: paraphrase_null is a NEGATIVE CONTROL — perturbed answers are
+semantically equivalent to gold and should be judged faithful. A high
+'FNR' on paraphrase_null is the CORRECT outcome (judges robust to syntax).
+
+======================================================================
+Perturbation suite: rule-pass rate per operator
+======================================================================
+  distractor_parroting  43/ 75 passed ( 57.3%); 25 skipped, 7 rule-failed
+  entity_swap         55/ 75 passed ( 73.3%); 0 skipped, 20 rule-failed
+  hedge_insertion     74/ 75 passed ( 98.7%); 0 skipped, 1 rule-failed
+  numeric_drift        9/ 75 passed ( 12.0%); 63 skipped, 3 rule-failed
+  paraphrase_null     30/ 75 passed ( 40.0%); 0 skipped, 45 rule-failed
+
+======================================================================
+Per-judge false-negative rate (marginals)
+======================================================================
+FNR = fraction of perturbations the judge called 'faithful' (missed unfaithful).
+
+operator           | alignscore_large | claude_opus_4_7 | claude_sonnet_4_6 | faithjudge_style_sonnet | glm_4_7_cerebras | hhem_2_1_open | minicheck_flan_t5_large | mistral_large_2 | qwen3_235b_cerebras | ragas_style_sonnet
+-----------------------------------------------------------------------------------------------------------------------------------
+distractor_parroting | 23/43 (  53%) |  7/43 (  16%) |  7/43 (  16%) |  5/43 (  12%) | 29/43 (  67%) | 42/43 (  98%) |  7/43 (  16%) |  6/43 (  14%) |  3/43 (   7%) | 35/43 (  81%)
+entity_swap        | 19/55 (  35%) |  1/55 (   2%) |  0/55 (   0%) |  0/55 (   0%) | 29/55 (  53%) | 17/55 (  31%) | 11/55 (  20%) |  4/55 (   7%) |  1/42 (   2%) | 20/55 (  36%)
+hedge_insertion    | 25/74 (  34%) |  0/74 (   0%) |  0/74 (   0%) |  0/74 (   0%) | 33/74 (  45%) |  5/74 (   7%) |  6/74 (   8%) |  4/74 (   5%) |  2/50 (   4%) | 35/74 (  47%)
+numeric_drift      |  6/ 9 (  67%) |  0/ 9 (   0%) |  0/ 9 (   0%) |  0/ 9 (   0%) |  6/ 9 (  67%) |  3/ 9 (  33%) |  4/ 9 (  44%) |  0/ 9 (   0%) |  0/ 7 (   0%) |  5/ 9 (  56%)
+paraphrase_null    | 30/30 ( 100%) | 28/30 (  93%) | 30/30 ( 100%) | 29/30 (  97%) | 30/30 ( 100%) | 29/30 (  97%) | 24/30 (  80%) | 29/30 (  97%) |  5/ 5 ( 100%) | 29/30 (  97%)
+
+======================================================================
+Joint-failure rate (ALL judges call perturbed answer 'faithful')
+======================================================================
+Threshold for joint failure on this preview pilot: ALL 10 judges say 'faithful'.
+
+  distractor_parroting joint failure: 1/43 = 2.3%
+                     independence baseline (∏ FNRs): 0.00%
+                     attack universality: +2.33pp
+
+  entity_swap        joint failure: 0/42 = 0.0%
+                     independence baseline (∏ FNRs): 0.00%
+                     attack universality: +0.00pp
+
+  hedge_insertion    joint failure: 0/50 = 0.0%
+                     independence baseline (∏ FNRs): 0.00%
+                     attack universality: +0.00pp
+
+  numeric_drift      joint failure: 0/7 = 0.0%
+                     independence baseline (∏ FNRs): 0.00%
+                     attack universality: +0.00pp
+
+  paraphrase_null    joint failure: 3/5 = 60.0%
+                     independence baseline (∏ FNRs): 10.87%
+                     attack universality: +49.13pp
+
+======================================================================
+Pairwise Cohen's kappa across judges (on perturbed answers, pooled across operators)
+======================================================================
+Higher kappa = judges agree more (positive correlation in their verdicts).
+
+Aligned on 147 (seed, operator) cells.
+
+           | alignscore_large | claude_opus_4_7 | claude_sonnet_4_6 | faithjudge_style_sonnet | glm_4_7_cerebras | hhem_2_1_open | minicheck_flan_t5_large | mistral_large_2 | qwen3_235b_cerebras | ragas_style_sonnet
+-----------------------------------------------------------------------------------------------------------------------------------------------
+alignscore_large |      -     | +0.287     | +0.287     | +0.244     | +0.129     | +0.456     | +0.258     | +0.202     | +0.215     | +0.371    
+claude_opus_4_7 | +0.287     |      -     | +0.819     | +0.846     | +0.075     | +0.213     | +0.374     | +0.633     | +0.670     | +0.186    
+claude_sonnet_4_6 | +0.287     | +0.819     |      -     | +0.846     | +0.055     | +0.213     | +0.374     | +0.552     | +0.670     | +0.186    
+faithjudge_style_sonnet | +0.244     | +0.846     | +0.846     |      -     | +0.056     | +0.153     | +0.284     | +0.549     | +0.678     | +0.133    
+glm_4_7_cerebras | +0.129     | +0.075     | +0.055     | +0.056     |      -     | +0.036     | +0.109     | +0.033     | +0.048     | +0.102    
+hhem_2_1_open | +0.456     | +0.213     | +0.213     | +0.153     | +0.036     |      -     | +0.138     | +0.172     | +0.126     | +0.506    
+minicheck_flan_t5_large | +0.258     | +0.374     | +0.374     | +0.284     | +0.109     | +0.138     |      -     | +0.256     | +0.322     | +0.140    
+mistral_large_2 | +0.202     | +0.633     | +0.552     | +0.549     | +0.033     | +0.172     | +0.256     |      -     | +0.747     | +0.114    
+qwen3_235b_cerebras | +0.215     | +0.670     | +0.670     | +0.678     | +0.048     | +0.126     | +0.322     | +0.747     |      -     | +0.105    
+ragas_style_sonnet | +0.371     | +0.186     | +0.186     | +0.133     | +0.102     | +0.506     | +0.140     | +0.114     | +0.105     |      -    
+
+======================================================================
+Day 5 GO/NO-GO check
+======================================================================
+Pre-registered criterion: at least one ADVERSARIAL operator with joint-failure >= 25%.
+paraphrase_null is excluded — it is a negative control, not an attack.
+
+  distractor_parroting   2.3%  fail
+  entity_swap          0.0%  fail
+  hedge_insertion      0.0%  fail
+  numeric_drift        0.0%  fail
+
+  Below the strict 25% threshold with 3 judges. But: nonzero joint-failure
+  IS observed on at least one adversarial operator, and the per-judge marginals
+  reveal striking architectural failures (see distractor_parroting / HHEM).
+  Recommendation: continue with full 8-judge pilot before pivoting to Candidate A.
