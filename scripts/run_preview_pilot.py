@@ -192,7 +192,14 @@ def main() -> None:
                     key = (seed.seed_id, "clean", mod.JUDGE_NAME)
                     if key in done_verdicts:
                         continue
-                    v = mod.score(seed, seed.gold_answer, operator="clean")
+                    try:
+                        v = mod.score(seed, seed.gold_answer, operator="clean")
+                    except Exception as e:
+                        # Single-judge failure must not crash the pilot. We do NOT
+                        # write a verdict and do NOT add to done_verdicts, so a
+                        # later resumed session re-tries this judge for this seed.
+                        print(f"     [skip {mod.JUDGE_NAME} on clean]: {str(e)[:120]}")
+                        continue
                     verdicts_f.write(json.dumps(_verdict_to_dict(v)) + "\n")
                     verdicts_f.flush()
                     done_verdicts.add(key)
@@ -261,15 +268,21 @@ def main() -> None:
                     print(f"     {op_name:14s}{cached_marker} SKIP  ({notes})")
                     continue
 
-                # Score with all 3 judges (skip ones already done)
+                # Score with all judges (skip ones already done, skip on error)
                 pert_verdict_rows = []
                 for jname, jmod in JUDGES:
                     key = (seed.seed_id, op_name, jmod.JUDGE_NAME)
                     if key in done_verdicts:
                         continue
-                    v = jmod.score(seed, perturbed_answer, operator=op_name)
+                    try:
+                        v = jmod.score(seed, perturbed_answer, operator=op_name)
+                    except Exception as e:
+                        # Per-judge failure: skip, don't cache, let next session retry.
+                        print(f"     [skip {jmod.JUDGE_NAME} on {op_name}]: {str(e)[:120]}")
+                        continue
                     pert_verdict_rows.append((jname, v.verdict))
                     v_f.write(json.dumps(_verdict_to_dict(v)) + "\n")
+                    done_verdicts.add(key)
                 v_f.flush()
 
                 # Recover all current-judge verdicts for joint-failure print

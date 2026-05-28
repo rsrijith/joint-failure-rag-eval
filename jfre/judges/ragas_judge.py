@@ -76,7 +76,11 @@ def _decompose(answer: str) -> list[str]:
         model=_MODEL,
         max_tokens=1024,
         temperature=0,
-        system="You decompose answers into atomic factual claims. Respond with valid JSON only.",
+        system=[{
+            "type": "text",
+            "text": "You decompose answers into atomic factual claims. Respond with valid JSON only.",
+            "cache_control": {"type": "ephemeral"},
+        }],
         messages=[{"role": "user", "content": _DECOMPOSE_PROMPT.format(answer=answer)}],
     )
     raw = _strip_fences("".join(b.text for b in msg.content if b.type == "text"))
@@ -88,12 +92,29 @@ def _decompose(answer: str) -> list[str]:
 
 @retry_on_rate_limit()
 def _verify(context: str, claim: str) -> bool:
+    # Cache the context block: same context is reused across N claims per seed,
+    # and across N×6 calls per seed (clean + 5 perturbed). Cache hits give 10x
+    # cost reduction on the context portion.
     msg = _client().messages.create(
         model=_MODEL,
         max_tokens=128,
         temperature=0,
-        system="You verify whether a claim is supported by a context. Respond with valid JSON only.",
-        messages=[{"role": "user", "content": _VERIFY_PROMPT.format(context=context, claim=claim)}],
+        system=[{
+            "type": "text",
+            "text": "You verify whether a claim is supported by a context. Respond with valid JSON only.",
+            "cache_control": {"type": "ephemeral"},
+        }],
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"CONTEXT:\n{context}",
+                    "cache_control": {"type": "ephemeral"},
+                },
+                {"type": "text", "text": f"\nCLAIM:\n{claim}\n\nReturn ONLY a JSON object, no markdown fences:\n{{\"supported\": true OR false}}"},
+            ],
+        }],
     )
     raw = _strip_fences("".join(b.text for b in msg.content if b.type == "text"))
     parsed = json.loads(raw)

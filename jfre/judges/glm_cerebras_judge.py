@@ -31,6 +31,12 @@ _MODEL = "zai-glm-4.7"
 _INTER_REQUEST_DELAY_S = 1.5
 _last_call_time = 0.0
 
+# Module-level flag set after the first token_quota_exceeded. Cerebras's free
+# tier resets daily, so once exhausted we short-circuit subsequent calls for
+# the rest of the process lifetime to avoid wasting 1.5 s of throttle per call.
+_quota_dead = False
+_QUOTA_DEAD_MARKERS = ("tokens per day", "token_quota_exceeded", "quota exceeded")
+
 
 @lru_cache(maxsize=1)
 def _client() -> Cerebras:
@@ -55,6 +61,9 @@ def score(
     answer_to_judge: str,
     operator: OperatorName | Literal["clean"],
 ) -> JudgeVerdict:
+    if _quota_dead:
+        raise RuntimeError("glm_cerebras quota_dead (skipping for rest of session)")
+
     prompt = render_prompt(seed.question, seed.passages, answer_to_judge)
 
     _throttle()
@@ -74,7 +83,13 @@ def score(
             ],
         )
 
-    response = _call()
+    try:
+        response = _call()
+    except Exception as e:
+        global _quota_dead
+        if any(m in str(e).lower() for m in _QUOTA_DEAD_MARKERS):
+            _quota_dead = True
+        raise
     raw = response.choices[0].message.content or ""
 
     verdict, reasoning, debug = parse_verdict(raw)

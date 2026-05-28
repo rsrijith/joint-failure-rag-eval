@@ -13,6 +13,18 @@ from typing import TypeVar
 
 T = TypeVar("T")
 
+# Substrings in str(exception) that mark the call as fatal (no retry).
+# These get checked FIRST. A daily-token-quota exhaustion will not recover
+# inside the pilot's lifetime, so retrying wastes minutes per call.
+_FATAL_TOKENS = (
+    "token_quota_exceeded",
+    "tokens per day",
+    "quota exceeded",
+    "credit",                 # "insufficient credit" / Anthropic credit exhaustion
+    "insufficient_quota",
+    "billing",                # Stripe-style billing errors
+)
+
 # Substrings in str(exception) that mark the call as retryable.
 _RETRYABLE_TOKENS = (
     "rate limit",
@@ -47,6 +59,9 @@ def retry_on_rate_limit(
                     return fn(*args, **kwargs)
                 except Exception as e:
                     msg = str(e).lower()
+                    is_fatal = any(tok in msg for tok in _FATAL_TOKENS)
+                    if is_fatal:
+                        raise
                     is_retryable = any(tok in msg for tok in _RETRYABLE_TOKENS)
                     if is_retryable and attempt < max_retries:
                         time.sleep(delay)

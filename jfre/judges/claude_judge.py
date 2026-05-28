@@ -13,8 +13,12 @@ from jfre.judges._retry import retry_on_rate_limit
 from jfre.types import JudgeVerdict, OperatorName, Seed
 
 
-JUDGE_NAME = "claude_opus_4_7"
-_MODEL = "claude-opus-4-7"
+JUDGE_NAME = "claude_sonnet_4_6"
+_MODEL = "claude-sonnet-4-6"
+# Note: earlier pilot runs used claude-opus-4-7 (JUDGE_NAME="claude_opus_4_7").
+# Those verdicts remain in verdicts.jsonl as a separate judge. Switching to
+# Sonnet + prompt caching cuts Claude API cost by ~15x for binary faithful/
+# unfaithful classification with negligible quality loss.
 
 
 @lru_cache(maxsize=1)
@@ -37,13 +41,19 @@ def score(
     """
     prompt = render_prompt(seed.question, seed.passages, answer_to_judge)
 
-    # claude-opus-4-7 does not accept temperature; rely on API default for determinism.
     @retry_on_rate_limit()
     def _call():
         return _client().messages.create(
             model=_MODEL,
             max_tokens=512,
-            system="You are a careful faithfulness judge. Respond with valid JSON only.",
+            temperature=0,
+            # System prompt is identical across every judge call, so cache it.
+            # 5-min ephemeral cache; hits cost 10% of base input price.
+            system=[{
+                "type": "text",
+                "text": "You are a careful faithfulness judge. Respond with valid JSON only.",
+                "cache_control": {"type": "ephemeral"},
+            }],
             messages=[{"role": "user", "content": prompt}],
         )
 

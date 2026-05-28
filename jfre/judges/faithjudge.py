@@ -113,8 +113,25 @@ def score(
             model=_MODEL,
             max_tokens=512,
             temperature=0,
-            system="You are a strict faithfulness judge. Respond with valid JSON only.",
-            messages=[{"role": "user", "content": prompt}],
+            # The system message + the few-shot block are identical across all
+            # 450 calls in the pilot — cache them aggressively. Per-call unique
+            # content is just the (context, question, answer) at the end.
+            system=[{
+                "type": "text",
+                "text": "You are a strict faithfulness judge. Respond with valid JSON only.",
+                "cache_control": {"type": "ephemeral"},
+            }],
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": _FEW_SHOT,
+                        "cache_control": {"type": "ephemeral"},
+                    },
+                    {"type": "text", "text": prompt[len(_FEW_SHOT):] if _FEW_SHOT in prompt else prompt},
+                ],
+            }],
         )
 
     try:
