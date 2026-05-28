@@ -51,12 +51,18 @@ def main() -> None:
     verdicts = [json.loads(line) for line in VERDICTS_FILE.open()]
     perturbations = [json.loads(line) for line in PERTURBATIONS_FILE.open()]
 
-    # Only include judges that have at least one verdict on a perturbed answer
-    # (drops judges that only have clean verdicts from earlier exploratory runs).
+    # Paper ensemble: 7 judges (3 LLM-as-judge + 1 claim-decomposition + 3 NLI).
+    # Excluded:
+    #   glm_4_7_cerebras: Cerebras free-tier daily quota too small to cover
+    #       the 500-seed pilot; partial-coverage data dropped to avoid bias.
+    #   qwen3_235b_cerebras, claude_opus_4_7: legacy from earlier iterations.
+    EXCLUDED_JUDGES = {"glm_4_7_cerebras", "qwen3_235b_cerebras", "claude_opus_4_7"}
+
     all_judges = sorted({v["judge"] for v in verdicts})
     judges = sorted({
         v["judge"] for v in verdicts
         if v["operator"] != "clean"
+        and v["judge"] not in EXCLUDED_JUDGES
     })
     operators = sorted({v["operator"] for v in verdicts if v["operator"] != "clean"})
 
@@ -231,7 +237,7 @@ def main() -> None:
         print("\n  Below the strict 25% threshold with 3 judges. But: nonzero joint-failure")
         print("  IS observed on at least one adversarial operator, and the per-judge marginals")
         print("  reveal striking architectural failures (see distractor_parroting / HHEM).")
-        print("  Recommendation: continue with full 8-judge pilot before pivoting to Candidate A.")
+        print("  Recommendation: continue with full 7-judge pilot before pivoting to Candidate A.")
 
 
 if __name__ == "__main__":

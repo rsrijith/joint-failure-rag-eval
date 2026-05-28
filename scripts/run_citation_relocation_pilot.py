@@ -9,9 +9,9 @@ Mechanism:
     1. Claude annotates gold_answer with [N] passage-index citations
        (cached via expertqa_cited loader).
     2. Skip seeds whose annotation yields < 2 distinct citations.
-    3. Score the CITED clean answer with all 8 judges. This is the
+    3. Score the CITED clean answer with all 7 judges. This is the
        per-seed "is the cited answer faithful" baseline. Seeds where
-       fewer than 4/8 judges call the cited_answer faithful are
+       fewer than 4/7 judges call the cited_answer faithful are
        dropped from the perturbation phase (the operator's failure
        signal only makes sense from a faithful starting point).
 
@@ -20,8 +20,8 @@ Mechanism:
        permutation. Each claim is now mis-attributed to a passage that
        does NOT support it (though the claim itself is still supported
        by SOME passage in the context).
-    2. Score the perturbed answer with all 8 judges.
-    3. Joint failure = all 8 judges call the perturbed (mis-attributed)
+    2. Score the perturbed answer with all 7 judges.
+    3. Joint failure = all 7 judges call the perturbed (mis-attributed)
        answer faithful.
 
 Target: 100 accepted-and-perturbed seeds.
@@ -46,7 +46,6 @@ from jfre.judges import (
     alignscore_judge,
     claude_judge,
     faithjudge,
-    glm_cerebras_judge,
     hhem_judge,
     minicheck_judge,
     mistral_judge,
@@ -57,13 +56,12 @@ from jfre.seeds.expertqa_cited import load as load_expertqa_cited
 
 
 N_TARGET_SEEDS = 100
-SEED_FAITHFUL_THRESHOLD = 4  # >=4/8 judges must call cited clean faithful
+SEED_FAITHFUL_THRESHOLD = 4  # >=4/7 judges must call cited clean faithful
 
 JUDGES = [
     ("claude",      claude_judge),
     ("mistral",     mistral_judge),
     ("hhem",        hhem_judge),
-    ("glm",         glm_cerebras_judge),
     ("minicheck",   minicheck_judge),
     ("alignscore",  alignscore_judge),
     ("ragas",       ragas_judge),
@@ -146,7 +144,7 @@ def main() -> None:
     current_judge_names = {mod.JUDGE_NAME for _name, mod in JUDGES}
 
     # Pull more raw than the target since not every cited_answer will be
-    # judged faithful by 4+/8 judges.
+    # judged faithful by 4+/7 judges.
     raw_iter = load_expertqa_cited(n=N_TARGET_SEEDS * 3)
 
     with SEEDS_FILE.open("a") as seeds_f, VERDICTS_FILE.open("a") as verdicts_f:

@@ -4,9 +4,10 @@
 (claude, qwen, mistral). Saves all verdicts and perturbations as JSONL
 for analysis by scripts/analyze_pilot.py.
 
-This is the "preview" pilot — full methodology calls for 8 judges and
-6 operators. Here we run a subset to validate orchestration and produce
-first joint-failure numbers before adding the local NLI judges.
+Methodology pilot: 7 judges (3 LLM-as-judge, 1 claim-decomposition,
+3 NLI fact-checkers) across 5 single-edit perturbation operators on
+~500 (HotpotQA + ExpertQA) accepted seeds. The 6th operator
+(citation_relocation) runs in a separate pilot script.
 
 Output:
     results/preview_pilot/seeds.jsonl
@@ -27,7 +28,6 @@ from jfre.judges import (
     alignscore_judge,
     claude_judge,
     faithjudge,
-    glm_cerebras_judge,
     hhem_judge,
     minicheck_judge,
     mistral_judge,
@@ -63,19 +63,22 @@ OPERATORS = [
     ("paraphrase_null",      paraphrase_null),
 ]
 
-# Full 8-judge ensemble:
+# Paper 7-judge ensemble:
 #   3 NLI/fact-checkers: HHEM-2.1-Open, MiniCheck-Flan-T5-L, AlignScore-large
 #   1 claim-decomposition: RAGAS-style (Claude Sonnet backing)
-#   4 LLM-as-judges:
-#     - Claude 4 (Anthropic)
+#   3 LLM-as-judges:
+#     - Claude Sonnet 4.6 (Anthropic)
 #     - Mistral Large 2 (Mistral)
-#     - GLM-4.7 via Cerebras (Z.AI)
 #     - FaithJudge-style (Claude Sonnet with Vectara hallucination few-shot)
+#
+# GLM-4.7 via Cerebras was tried as a 4th LLM-as-judge but Cerebras's
+# free-tier daily token quota is too small to cover the 500-seed pilot.
+# Partial GLM verdicts remain on disk under name "glm_4_7_cerebras" but
+# are excluded from the paper analysis (see scripts/analyze_*.py).
 JUDGES = [
     ("claude",      claude_judge),
     ("mistral",     mistral_judge),
     ("hhem",        hhem_judge),
-    ("glm",         glm_cerebras_judge),
     ("minicheck",   minicheck_judge),
     ("alignscore",  alignscore_judge),
     ("ragas",       ragas_judge),

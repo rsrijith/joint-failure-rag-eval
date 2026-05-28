@@ -29,6 +29,16 @@ OUT_DIRS = [
 ]
 CLEAN_OPERATORS = {"clean", "clean_cited"}  # not perturbations
 
+# Exclude judges that are not part of the paper's 7-judge ensemble.
+#   glm_4_7_cerebras: Cerebras free-tier daily quota too small to collect
+#       coverage across the 500-seed pilot. Has partial data (~350 verdicts)
+#       on the cached subset only; dropped to avoid stratification artifacts.
+#   qwen3_235b_cerebras: legacy judge from earlier exploration before Cerebras
+#       deprecated the model.
+#   claude_opus_4_7: legacy. Switched to Claude Sonnet 4.6 mid-pilot for
+#       cost efficiency; Opus verdicts kept on disk but excluded from paper.
+EXCLUDED_JUDGES = {"glm_4_7_cerebras", "qwen3_235b_cerebras", "claude_opus_4_7"}
+
 
 def _cohens_kappa(a: list[str], b: list[str]) -> float:
     assert len(a) == len(b)
@@ -69,7 +79,9 @@ def main() -> None:
 
     all_judges = sorted({v["judge"] for v in verdicts})
     judges = sorted({
-        v["judge"] for v in verdicts if v["operator"] not in CLEAN_OPERATORS
+        v["judge"] for v in verdicts
+        if v["operator"] not in CLEAN_OPERATORS
+        and v["judge"] not in EXCLUDED_JUDGES
     })
     operators = sorted({
         v["operator"] for v in verdicts if v["operator"] not in CLEAN_OPERATORS
