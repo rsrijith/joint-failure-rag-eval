@@ -45,13 +45,14 @@ from jfre.seeds.hotpotqa import load as load_hotpotqa
 
 
 # Per-source seed targets and raw pool sizes.
-# Existing seeds.jsonl already has 50 accepted HotpotQA seeds from earlier runs,
-# so the HotpotQA pass will reuse cached decisions and exit fast.
+# Methodology target: 500 accepted seeds, balanced across sources.
+# Resumability: previously-accepted seeds (50 HotpotQA + 25 ExpertQA from
+# preview pilot) reuse cached decisions; only new raw seeds get fresh-filtered.
 SOURCE_TARGETS: list[tuple[str, int, int, object]] = [
-    ("hotpotqa", 50, 200, load_hotpotqa),
-    ("expertqa", 25,  75, load_expertqa),
+    ("hotpotqa", 250, 1000, load_hotpotqa),
+    ("expertqa", 250, 1500, load_expertqa),
 ]
-N_SEEDS = sum(t[1] for t in SOURCE_TARGETS)  # 75 total accepted
+N_SEEDS = sum(t[1] for t in SOURCE_TARGETS)  # 500 total accepted
 RAW_POOL = sum(t[2] for t in SOURCE_TARGETS)  # legacy field; unused below
 
 OPERATORS = [
