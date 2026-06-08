@@ -69,3 +69,4 @@ validation/gemini_annotation_batches/
 texput.log
 *.log
 *.numbers
+*.zip
