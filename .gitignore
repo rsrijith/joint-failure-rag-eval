@@ -42,3 +42,30 @@ results/intermediate/
 .idea/
 *.swp
 .DS_Store
+
+# Relocated shared cache (symlinks to ../.research_cache) and local logs
+hf_cache
+data/raw/alignscore
+data/raw/hotpotqa
+data/raw/expertqa
+logs/
+validation/_answer_key.json
+
+# Manuscript: held out of the public repo during double-blind review.
+# (The paper references an anonymized mirror, not this real-name repo.)
+draft/
+latex/
+outline.md
+CLAUDE.md
+results/paper_outline_v1.md
+
+# Files that contain author identity (keep out of public + anonymized snapshots)
+validation/gemini_annotation_input.jsonl
+validation/gemini_annotation_batches/
+
+# Backups / build junk
+*-bak*
+*.preclean-bak
+texput.log
+*.log
+*.numbers

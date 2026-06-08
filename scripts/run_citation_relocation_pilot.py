@@ -55,7 +55,7 @@ from jfre.operators import citation_relocation
 from jfre.seeds.expertqa_cited import load as load_expertqa_cited
 
 
-N_TARGET_SEEDS = 100
+N_TARGET_SEEDS = 250  # scaled from 100 (2026-06-05) to tighten CIs; resumable
 SEED_FAITHFUL_THRESHOLD = 4  # >=4/7 judges must call cited clean faithful
 
 JUDGES = [
@@ -160,9 +160,9 @@ def main() -> None:
                 rec = done_seeds[seed.seed_id]
                 if rec["accepted"]:
                     accepted_seeds.append(seed)
-                    print(f"  [{i+1:3d}] {seed.seed_id} (cached) {rec['n_judges_faithful']}/8 -> ACCEPT")
+                    print(f"  [{i+1:3d}] {seed.seed_id} (cached) {rec['n_judges_faithful']}/{len(JUDGES)} -> ACCEPT")
                 else:
-                    print(f"  [{i+1:3d}] {seed.seed_id} (cached) {rec['n_judges_faithful']}/8 -> reject")
+                    print(f"  [{i+1:3d}] {seed.seed_id} (cached) {rec['n_judges_faithful']}/{len(JUDGES)} -> reject")
                 continue
 
             # Fresh: score the CITED clean answer with each judge.
@@ -202,7 +202,7 @@ def main() -> None:
             seeds_f.write(json.dumps(seed_rec) + "\n")
             seeds_f.flush()
             done_seeds[seed.seed_id] = seed_rec
-            print(f"  [{i+1:3d}] {seed.seed_id} {n_faithful}/8 cited-faithful  {'ACCEPT' if accepted else 'reject'}")
+            print(f"  [{i+1:3d}] {seed.seed_id} {n_faithful}/{len(JUDGES)} cited-faithful  {'ACCEPT' if accepted else 'reject'}")
             if accepted:
                 accepted_seeds.append(seed)
 
@@ -257,7 +257,7 @@ def main() -> None:
             n_pert_faithful = sum(1 for r in all_pert_verdicts if r["verdict"] == "faithful")
             joint = " <-- JOINT FAILURE" if n_pert_faithful == len(JUDGES) else ""
             summary = " ".join(f"{r['judge'][:6]}={r['verdict'][:5]}" for r in all_pert_verdicts)
-            print(f"     citation_relocation{cached_marker} {n_pert_faithful}/8: {summary}{joint}")
+            print(f"     citation_relocation{cached_marker} {n_pert_faithful}/{len(JUDGES)}: {summary}{joint}")
 
     print(f"\nDone. Outputs:")
     print(f"  {SEEDS_FILE}")

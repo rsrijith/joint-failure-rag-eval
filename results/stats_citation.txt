@@ -1,0 +1,26 @@
+
+==============================================================================
+  Claude-annotated citations (content prompt vs attribution prompt, scrambled)
+==============================================================================
+  judge                          content FNR (95% CI)      attr FNR (95% CI)      Δ (boot 95% CI)  McNemar p
+  claude_sonnet_4_6           47% [ 41, 54]  (n=241)     4% [  2,  7]   +44pp [+37,+50]   1.33e-30
+  mistral_large_2             50% [ 44, 56]  (n=249)     4% [  2,  7]   +46pp [+39,+52]   9.63e-35
+  faithjudge_style_sonnet     37% [ 31, 44]  (n=244)     3% [  1,  6]   +34pp [+28,+41]   2.53e-23
+
+==============================================================================
+  Llama-annotated citations (cross-model control, scrambled)
+==============================================================================
+  judge                          content FNR (95% CI)      attr FNR (95% CI)      Δ (boot 95% CI)  McNemar p
+  claude_sonnet_4_6           49% [ 37, 61]  (n=63)     5% [  2, 13]   +44pp [+32,+57]   7.45e-09
+  mistral_large_2             51% [ 39, 63]  (n=63)     3% [  1, 11]   +48pp [+35,+60]   1.86e-09
+  faithjudge_style_sonnet     33% [ 23, 46]  (n=63)     3% [  1, 11]   +30pp [+17,+43]   2.10e-05
+
+==============================================================================
+  §5.1 FNR table with Wilson 95% CI (per judge x operator)
+==============================================================================
+  entity_swap            (n=340): claud:2[1,5]  mistr:10[8,15]  faith:1[1,3]  hhem:36[32,42]  minic:27[23,33]  align:39[34,44]  ragas:46[42,52]
+  numeric_drift          (n=69): claud:4[1,12]  mistr:11[6,22]  faith:2[1,10]  hhem:47[36,59]  minic:42[31,54]  align:59[48,70]  ragas:73[62,83]
+  hedge_insertion        (n=491): claud:0[-0,1]  mistr:3[2,5]  faith:0[-0,1]  hhem:5[3,7]  minic:13[10,16]  align:40[36,45]  ragas:58[54,62]
+  distractor_parroting   (n=212): claud:21[16,27]  mistr:13[9,18]  faith:13[10,19]  hhem:96[93,98]  minic:21[17,28]  align:51[45,58]  ragas:83[77,87]
+  citation_relocation    (n=241): claud:47[41,54]  mistr:49[44,56]  faith:37[31,44]  hhem:60[55,67]  minic:70[64,75]  align:86[82,90]  ragas:93[90,96]
+  paraphrase_null        (n=270): claud:79[74,84]  mistr:80[76,85]  faith:71[66,77]  hhem:68[63,74]  minic:68[63,74]  align:94[91,97]  ragas:95[92,97]

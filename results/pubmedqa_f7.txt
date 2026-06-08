@@ -1,0 +1,22 @@
+PubMedQA F7: per-(claim, cited-passage) NLI ablation
+==================================================================
+accepted seeds=37, claim-citation units=101
+
+hhem_2_1_open
+  pooled FNR (deployed)  : 10.8%
+  per-citation FNR       : 0.0%   (Δ +10.8pp)
+  clean per-citation pass: 5.4%
+  contamination rate     : 6.9%
+
+minicheck_flan_t5_large
+  pooled FNR (deployed)  : 18.9%
+  per-citation FNR       : 0.0%   (Δ +18.9pp)
+  clean per-citation pass: 8.1%
+  contamination rate     : 10.9%
+
+alignscore_large
+  pooled FNR (deployed)  : 24.3%
+  per-citation FNR       : 0.0%   (Δ +24.3pp)
+  clean per-citation pass: 0.0%
+  contamination rate     : 7.9%
+

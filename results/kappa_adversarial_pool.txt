@@ -1,0 +1,21 @@
+Pairwise Cohen's kappa, ADVERSARIAL pool only (1350 cells, 5 operators, paraphrase_null excluded)
+============================================================================================
+             Claude   FaithJ  Mistral     HHEM   MiniCk    Align    RAGAS
+    Claude     --     +0.705   +0.531   +0.207   +0.195   +0.169   +0.122 
+    FaithJ   +0.705     --     +0.436   +0.126   +0.160   +0.120   +0.088 
+   Mistral   +0.531   +0.436     --     +0.140   +0.219   +0.147   +0.100 
+      HHEM   +0.207   +0.126   +0.140     --     +0.319   +0.285   +0.307 
+    MiniCk   +0.195   +0.160   +0.219   +0.319     --     +0.353   +0.257 
+     Align   +0.169   +0.120   +0.147   +0.285   +0.353     --     +0.512 
+     RAGAS   +0.122   +0.088   +0.100   +0.307   +0.257   +0.512     --   
+
+within-LLM avg kappa = +0.557
+    Claude x FaithJ = +0.705
+    Claude x Mistral = +0.531
+    FaithJ x Mistral = +0.436
+within-NLI avg kappa = +0.319
+    Align x HHEM = +0.285
+    Align x MiniCk = +0.353
+    HHEM x MiniCk = +0.319
+cross-architecture (LLM x NLI) avg kappa = +0.165
+within-LLM minus within-NLI gap = +0.238

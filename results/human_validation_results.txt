@@ -1,0 +1,43 @@
+======================================================================
+  TASK A — Paraphrase equivalence
+======================================================================
+  100 labeled: equivalent(yes)=98  not-equivalent(no)=2  other=0
+  Human says 98% of paraphrases are meaning-preserving.
+  (Generator/rule passed all of them as 'equivalent' — Claude self-judged.)
+
+  Over-rejection on HUMAN-equivalent paraphrases (judge says UNFAITHFUL
+  on a paraphrase the human confirmed is meaning-preserving):
+    claude_sonnet_4_6           22/98  =   22% over-reject
+    mistral_large_2             20/98  =   20% over-reject
+    faithjudge_style_sonnet     29/98  =   30% over-reject
+    hhem_2_1_open               24/98  =   24% over-reject
+    minicheck_flan_t5_large     31/98  =   32% over-reject
+    alignscore_large             3/98  =    3% over-reject
+    ragas_style_sonnet           5/98  =    5% over-reject
+
+  The 2 'not-equivalent' items (paraphrase drifted) — human notes:
+    PN-006: "IRS are a primary malaria prevention tool, and the percentage of the population at risk protected h
+    PN-029: In the middle of Answer A, it states:"In some states, the duty is discharged by voluntarily admittin
+
+======================================================================
+  TASK B — Perturbation faithfulness spot-check
+======================================================================
+  50 labeled: human faithful=0  unfaithful=50
+  Human vs intended label: 50/50 = 100% agree
+    (intended = unfaithful for all; human-unfaithful rate validates the operators)
+
+  Human-unfaithful rate by operator (higher = operator label is valid):
+    citation_relocation      10/10 judged unfaithful
+    distractor_parroting     10/10 judged unfaithful
+    entity_swap              10/10 judged unfaithful
+    hedge_insertion          10/10 judged unfaithful
+    numeric_drift            10/10 judged unfaithful
+
+  Human vs each judge agreement (on the 50 spot-check cells):
+    claude_sonnet_4_6           43/50  =   86% agree with human
+    mistral_large_2             39/49  =   80% agree with human
+    faithjudge_style_sonnet     46/50  =   92% agree with human
+    hhem_2_1_open               19/50  =   38% agree with human
+    minicheck_flan_t5_large     29/50  =   58% agree with human
+    alignscore_large            21/50  =   42% agree with human
+    ragas_style_sonnet          13/50  =   26% agree with human

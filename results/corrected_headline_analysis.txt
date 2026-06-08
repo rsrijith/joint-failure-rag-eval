@@ -1,0 +1,51 @@
+==============================================================================
+  CORRECTED HEADLINE ANALYSIS (6 functional judges; AlignScore dropped)
+==============================================================================
+
+[1] Pairwise Cohen's kappa (adversarial operators pooled)
+
+                           claude_s  mistral_  faithjud  hhem_2_1  minichec  ragas_st
+  claude_sonnet_4_6               --    +0.463    +0.701    +0.190    +0.162    +0.099
+  mistral_large_2             +0.463        --    +0.390    +0.129    +0.201    +0.078
+  faithjudge_style_sonnet     +0.701    +0.390        --    +0.108    +0.133    +0.067
+  hhem_2_1_open               +0.190    +0.129    +0.108        --    +0.303    +0.305
+  minicheck_flan_t5_large     +0.162    +0.201    +0.133    +0.303        --    +0.232
+  ragas_style_sonnet          +0.099    +0.078    +0.067    +0.305    +0.232        --
+
+[2] Within-architecture cluster kappa (adversarial pooled)
+
+    LLM  claude_sonnet_ x mistral_large_  kappa = +0.463
+    LLM  claude_sonnet_ x faithjudge_sty  kappa = +0.701
+    LLM  mistral_large_ x faithjudge_sty  kappa = +0.390
+    --> within-LLM avg kappa = +0.518  (3 pairs)
+
+    NLI  hhem_2_1_open  x minicheck_flan  kappa = +0.303
+    --> within-NLI avg kappa = +0.303  (1 pair)
+
+    GAP (within-LLM - within-NLI) = +0.215
+    NOTE: with AlignScore dropped, the NLI 'cluster' is a single pair
+    (HHEM x MiniCheck). The architecture-cluster claim is weaker for NLI.
+
+[3] The citation-attribution blind spot is UNIVERSAL across functional judges
+
+    A judge is useful only if it passes clean answers (high clean-faithful)
+    AND catches misattribution (low citation FNR). No functional judge does both.
+
+    judge                       clean-faithful   citation FNR
+    --------------------------------------------------------
+    claude_sonnet_4_6              57% (n=803)    50% (n=100)
+    mistral_large_2                56% (n=950)    50% (n=100)
+    faithjudge_style_sonnet        50% (n=803)    37% (n=100)
+    hhem_2_1_open                  58% (n=950)    66% (n=100)
+    minicheck_flan_t5_large        60% (n=878)    71% (n=100)
+    ragas_style_sonnet             76% (n=803)    95% (n=100)
+
+    AlignScore (excluded): clean-faithful 0% -> 'catches' citation at 0% FNR
+    only because it rejects everything. Not a functional detector.
+
+[4] Ensemble shrinkage vs majority-of-6 (functional) on adversarial cells
+
+    Comparison base: 1212 cells fully scored by all 6 functional judges
+    best 2-judge subset: ('claude_sonnet_4_6', 'ragas_style_sonnet') -> 96.5% match with majority-of-6
+    best 3-judge subset: ('claude_sonnet_4_6', 'mistral_large_2', 'minicheck_flan_t5_large') -> 97.7% match with majority-of-6
+    best 4-judge subset: ('claude_sonnet_4_6', 'mistral_large_2', 'hhem_2_1_open', 'minicheck_flan_t5_large') -> 98.3% match with majority-of-6

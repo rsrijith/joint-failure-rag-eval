@@ -1,0 +1,9 @@
+PubMedQA biomedical replication (LOCAL NLI judges) — citation_relocation
+========================================================================
+accepted seeds: 37
+
+Per judge: clean-faithful%, scrambled-faithful% (=pooled FNR),
+and CONDITIONAL miss = scrambled-faithful among seeds the judge passed clean:
+  hhem_2_1_open              clean-faithful  10.8%  scrambled-FNR  10.8%  conditional-miss 100.0% (n_cond=4)  [n=37]
+  minicheck_flan_t5_large    clean-faithful  18.9%  scrambled-FNR  18.9%  conditional-miss 100.0% (n_cond=7)  [n=37]
+  alignscore_large           clean-faithful  29.7%  scrambled-FNR  24.3%  conditional-miss  72.7% (n_cond=11)  [n=37]

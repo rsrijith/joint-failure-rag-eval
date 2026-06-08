@@ -1,0 +1,61 @@
+F7: per-(claim, cited-passage) NLI ablation
+======================================================================
+Per-citation mode: each claim scored against ONLY its cited passage.
+Answer = faithful iff every claim entailed by its cited passage.
+Pooled FNR = the deployed whole-premise number from Table 1.
+Contamination = % of scrambled claims whose relocated passage STILL
+  entails the claim (operator deranges but does not verify non-support).
+
+hhem_2_1_open  (n_seed=250, n_unit=1340)
+  pooled FNR (deployed)      : 61%
+  per-citation FNR           : 2.4%   (Δ +58.6pp)
+  clean per-citation pass    : 25.2%
+  clean claim-support rate   : 65.7%
+  contamination rate         : 13.6%
+
+minicheck_flan_t5_large  (n_seed=250, n_unit=1340)
+  pooled FNR (deployed)      : 70%
+  per-citation FNR           : 1.2%   (Δ +68.8pp)
+  clean per-citation pass    : 16.0%
+  clean claim-support rate   : 57.2%
+  contamination rate         : 13.5%
+
+alignscore_large  (n_seed=250, n_unit=1340)
+  pooled FNR (deployed)      : 87%
+  per-citation FNR           : 2.8%   (Δ +84.2pp)
+  clean per-citation pass    : 16.4%
+  clean claim-support rate   : 59.3%
+  contamination rate         : 13.2%
+
+[
+  {
+    "pooled_fnr": 61,
+    "per_citation_fnr": 2.4,
+    "delta": 58.6,
+    "clean_pass_per_cit": 25.2,
+    "contamination_rate": 13.6,
+    "clean_claim_support": 65.7,
+    "n_seed": 250,
+    "n_unit": 1340
+  },
+  {
+    "pooled_fnr": 70,
+    "per_citation_fnr": 1.2,
+    "delta": 68.8,
+    "clean_pass_per_cit": 16.0,
+    "contamination_rate": 13.5,
+    "clean_claim_support": 57.2,
+    "n_seed": 250,
+    "n_unit": 1340
+  },
+  {
+    "pooled_fnr": 87,
+    "per_citation_fnr": 2.8,
+    "delta": 84.2,
+    "clean_pass_per_cit": 16.4,
+    "contamination_rate": 13.2,
+    "clean_claim_support": 59.3,
+    "n_seed": 250,
+    "n_unit": 1340
+  }
+]

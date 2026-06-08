@@ -1,0 +1,12 @@
+PubMedQA Claude/FaithJudge confirmation arm — citation_relocation 2x2
+======================================================================
+seeds scored: 37   est cost: $1.01
+
+claude_sonnet_4_6  (n=37)
+  content:clean 43.2  content:scrambled 32.4  attribution:clean 56.8  attribution:scrambled 13.5
+  attribution gain (content-scram - attr-scram FNR) = +18.9pp
+
+faithjudge_style_sonnet  (n=37)
+  content:clean 45.9  content:scrambled 35.1  attribution:clean 51.4  attribution:scrambled 13.5
+  attribution gain (content-scram - attr-scram FNR) = +21.6pp
+

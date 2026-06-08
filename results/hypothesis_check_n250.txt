@@ -1,0 +1,79 @@
+Fully-scored adversarial cells: 1358
+Total fully-scored cells (incl negative control): 1628
+
+==============================================================================
+H-A: LLM-judge ensembling is redundant
+==============================================================================
+
+  A1: pairwise κ within LLM cluster (pooled across operators)
+    claude_sonnet_4_6 vs faithjudge_style_sonnet: κ = +0.690
+    claude_sonnet_4_6 vs mistral_large_2: κ = +0.524
+    faithjudge_style_sonnet vs mistral_large_2: κ = +0.438
+  Within-LLM avg κ = +0.551  → A1 PASS (threshold 0.5)
+
+  A2: marginal info gain from a 3rd LLM-judge
+    3rd-judge flips LLM-majority verdict on 0/1358 = 0.0% of cells
+  A2 PASS (threshold <10% — 3rd judge adds <10% information)
+
+  A3: per-operator within-LLM κ stability
+    citation_relocation    within-LLM avg κ = +0.455  (n=245)
+    distractor_parroting   within-LLM avg κ = +0.448  (n=212)
+    entity_swap            within-LLM avg κ = +0.395  (n=341)
+    hedge_insertion        within-LLM avg κ = +0.333  (n=491)
+    numeric_drift          within-LLM avg κ = +0.407  (n=69)
+  Range: [+0.333, +0.455]
+  All > 0.4: NO
+  A3 FAIL (stable high κ across operators)
+
+==============================================================================
+H-D: Within-architecture diversity reversal (LLM clusters but NLI doesn't)
+==============================================================================
+
+  D1: pairwise κ within NLI cluster (pooled)
+    alignscore_large vs hhem_2_1_open: κ = +0.287
+    alignscore_large vs minicheck_flan_t5_large: κ = +0.350
+    hhem_2_1_open vs minicheck_flan_t5_large: κ = +0.317
+  Within-NLI avg κ = +0.318
+
+  D1+D2: within-LLM (+0.551) - within-NLI (+0.318) = +0.233
+  D1+D2 FAIL (threshold gap ≥ 0.30)
+
+  D3: per-operator stability — is the reversal stable?
+    citation_relocation    within-LLM=+0.455  within-NLI=+0.063 (reversed)
+    distractor_parroting   within-LLM=+0.448  within-NLI=+0.099 (reversed)
+    entity_swap            within-LLM=+0.395  within-NLI=+0.488 (not reversed)
+    hedge_insertion        within-LLM=+0.333  within-NLI=+0.122 (reversed)
+    numeric_drift          within-LLM=+0.407  within-NLI=+0.371 (reversed)
+  Reversal holds on 4/5 adversarial operators
+  D3 FAIL (reversal must hold for ALL adversarial ops)
+
+==============================================================================
+E1: Architecture × operator FNR (architectural blind spots)
+==============================================================================
+
+operator               |  LLM avg |  NLI avg |    RAGAS
+------------------------------------------------------------
+citation_relocation    |   45.3%  |   72.4%  |   93.9%
+distractor_parroting   |   16.0%  |   56.6%  |   83.0%
+entity_swap            |    5.1%  |   34.6%  |   46.9%
+hedge_insertion        |    1.1%  |   19.4%  |   58.0%
+numeric_drift          |    6.8%  |   49.8%  |   73.9%
+
+==============================================================================
+E2: Ensemble shrinkage — can we approximate the 7-judge ensemble?
+==============================================================================
+
+  Testing all subsets of size 2-4 (out of 7 judges) for agreement with majority-of-7 ensemble verdict
+  Comparison set: 1358 adversarial cells
+
+  Best 2-judge subset: ('claude_sonnet_4_6', 'faithjudge_style_sonnet') → matches majority-of-7 on 86.7% of cells
+  Best 3-judge subset: ('claude_sonnet_4_6', 'hhem_2_1_open', 'minicheck_flan_t5_large') → matches majority-of-7 on 93.4% of cells
+  Best 4-judge subset: ('claude_sonnet_4_6', 'hhem_2_1_open', 'minicheck_flan_t5_large', 'mistral_large_2') → matches majority-of-7 on 94.8% of cells
+
+==============================================================================
+E3: AlignScore standalone behavior
+==============================================================================
+  AlignScore says 'faithful' on 948/1628 = 58.2% of perturbed cells
+  AlignScore says 'faithful' on 676/1087 = 62.2% of CLEAN cells
+  → AlignScore appears to be near-uniform: ratio perturbed/clean = 0.936
+  → If ratio ~1.0, AlignScore is not discriminating between clean and perturbed answers.

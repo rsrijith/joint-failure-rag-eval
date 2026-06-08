@@ -137,6 +137,19 @@ def load(n: int, shuffle_seed: int = 42) -> Iterator[Seed]:
             try:
                 cited = _annotate(seed.question, seed.passages, seed.gold_answer)
             except Exception as e:
+                # Do NOT cache transient/recoverable failures (credit, quota,
+                # rate-limit, network). Caching them poisons subsequent runs.
+                msg = str(e).lower()
+                transient_markers = (
+                    "credit", "quota", "rate limit", "rate_limit",
+                    "429", "503", "504", "timeout", "timed out",
+                    "connection", "overloaded", "billing",
+                )
+                if any(tok in msg for tok in transient_markers):
+                    print(f"     [skip cache for transient error]: {str(e)[:120]}")
+                    continue
+                # Permanent failure (content rejection, malformed input, etc.):
+                # cache so we don't keep paying for the same broken seed.
                 _append_cache({
                     "seed_id": seed.seed_id,
                     "cited_answer": "",

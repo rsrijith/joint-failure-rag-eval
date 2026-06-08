@@ -1,0 +1,78 @@
+Loaded 20292 verdicts, 2750 perturbations across 2 pilots.
+Judges with perturbed-answer verdicts (7): ['alignscore_large', 'claude_sonnet_4_6', 'faithjudge_style_sonnet', 'hhem_2_1_open', 'minicheck_flan_t5_large', 'mistral_large_2', 'ragas_style_sonnet']
+Excluded judges (no perturbed verdicts): ['claude_opus_4_7', 'glm_4_7_cerebras', 'qwen3_235b_cerebras']
+Operators (6): ['citation_relocation', 'distractor_parroting', 'entity_swap', 'hedge_insertion', 'numeric_drift', 'paraphrase_null']
+
+Note: paraphrase_null is a NEGATIVE CONTROL — perturbed answers are
+semantically equivalent to gold and should be judged faithful. A high
+'FNR' on paraphrase_null is the CORRECT outcome.
+
+Note: citation_relocation has a different failure semantics — claims
+remain in context; only citation attribution is broken. Judges that
+verify claim-in-context without checking per-citation attribution
+are EXPECTED to call these perturbations faithful, exposing a shared
+blind spot across the ensemble.
+
+==============================================================================
+Perturbation suite: rule-pass rate per operator
+==============================================================================
+  citation_relocation    250/250 passed (100.0%)
+  distractor_parroting   212/500 passed ( 42.4%)
+  entity_swap            341/500 passed ( 68.2%)
+  hedge_insertion        491/500 passed ( 98.2%)
+  numeric_drift           69/500 passed ( 13.8%)
+  paraphrase_null        270/500 passed ( 54.0%)
+
+==============================================================================
+Per-judge false-negative rate (marginals)
+==============================================================================
+FNR = fraction of perturbations the judge called 'faithful'.
+
+operator               | alignscore_large | claude_sonnet_4_6 | faithjudge_style_sonnet | hhem_2_1_open  | minicheck_flan_t5_large | mistral_large_2 | ragas_style_sonnet
+------------------------------------------------------------------------------------------------------------------------------------------------
+citation_relocation    | 217/250( 87%)  | 118/245( 48%)  |  97/250( 39%)  | 152/250( 61%)  | 175/250( 70%)  | 125/250( 50%)  | 235/250( 94%) 
+distractor_parroting   | 109/212( 51%)  |  45/212( 21%)  |  29/212( 14%)  | 205/212( 97%)  |  46/212( 22%)  |  28/212( 13%)  | 176/212( 83%) 
+entity_swap            | 133/341( 39%)  |  10/341(  3%)  |   5/341(  1%)  | 126/341( 37%)  |  95/341( 28%)  |  37/341( 11%)  | 160/341( 47%) 
+hedge_insertion        | 197/491( 40%)  |   0/491(  0%)  |   0/491(  0%)  |  25/491(  5%)  |  64/491( 13%)  |  16/491(  3%)  | 285/491( 58%) 
+numeric_drift          |  41/ 69( 59%)  |   3/ 69(  4%)  |   2/ 69(  3%)  |  33/ 69( 48%)  |  29/ 69( 42%)  |   9/ 69( 13%)  |  51/ 69( 74%) 
+paraphrase_null        | 256/270( 95%)  | 215/270( 80%)  | 194/270( 72%)  | 185/270( 69%)  | 185/270( 69%)  | 218/270( 81%)  | 258/270( 96%) 
+
+==============================================================================
+Joint-failure rate per operator (ALL judges call perturbed 'faithful')
+==============================================================================
+Ensemble size: 7 judges.
+
+  citation_relocation    joint failure  29/245 =  11.8%   baseline= 3.18%   universality=+8.66pp
+  distractor_parroting   joint failure   6/212 =   2.8%   baseline= 0.03%   universality=+2.80pp
+  entity_swap            joint failure   4/341 =   1.2%   baseline= 0.00%   universality=+1.17pp
+  hedge_insertion        joint failure   0/491 =   0.0%   baseline= 0.00%   universality=+0.00pp
+  numeric_drift          joint failure   1/ 69 =   1.4%   baseline= 0.00%   universality=+1.45pp
+  paraphrase_null        joint failure  92/270 =  34.1%   baseline=19.65%   universality=+14.42pp
+
+==============================================================================
+Pairwise Cohen's kappa across judges (perturbed answers, all operators pooled)
+==============================================================================
+Higher kappa = judges agree more (positive correlation).
+
+Aligned on 1628 (seed, operator) cells.
+
+                   | alignscore_large | claude_sonnet_4_6 | faithjudge_style_sonnet | hhem_2_1_open  | minicheck_flan_t5_large | mistral_large_2 | ragas_style_sonnet
+--------------------------------------------------------------------------------------------------------------------------------------------
+alignscore_large   |              - | +0.286         | +0.236         | +0.316         | +0.377         | +0.269         | +0.538        
+claude_sonnet_4_6  | +0.286         |              - | +0.787         | +0.285         | +0.279         | +0.655         | +0.194        
+faithjudge_style_sonnet | +0.236         | +0.787         |              - | +0.227         | +0.272         | +0.600         | +0.150        
+hhem_2_1_open      | +0.316         | +0.285         | +0.227         |              - | +0.340         | +0.230         | +0.312        
+minicheck_flan_t5_large | +0.377         | +0.279         | +0.272         | +0.340         |              - | +0.304         | +0.274        
+mistral_large_2    | +0.269         | +0.655         | +0.600         | +0.230         | +0.304         |              - | +0.172        
+ragas_style_sonnet | +0.538         | +0.194         | +0.150         | +0.312         | +0.274         | +0.172         |              -
+
+==============================================================================
+Operator-stratified summary (for paper headline numbers)
+==============================================================================
+  citation_relocation    joint-failure  11.8%
+  distractor_parroting   joint-failure   2.8%
+  entity_swap            joint-failure   1.2%
+  hedge_insertion        joint-failure   0.0%
+  numeric_drift          joint-failure   1.4%
+
+  0/5 adversarial operators clear the 25% joint-failure threshold.

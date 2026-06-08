@@ -1,0 +1,12 @@
+You are annotating an answer with citation markers.
+
+You are given a QUESTION, a list of numbered PASSAGES, and an ANSWER that has no citations. For each factual claim in the answer, insert a citation marker [N] immediately after the claim, where N is the number of the passage that DIRECTLY supports that claim.
+
+Rules:
+- Only cite a passage that explicitly contains the cited claim's content.
+- One marker per claim, placed at the end of the sentence or clause containing the claim.
+- If several passages support a claim, pick the single most directly relevant one.
+- If no passage supports a claim, leave it without a citation.
+- Do NOT change any of the answer's wording. Only insert [N] markers.
+
+Return ONLY the annotated answer text with [N] markers inserted. No commentary, no JSON, no markdown fences.

@@ -1,0 +1,28 @@
+Second independent human annotator (2026-06-04)
+================================================
+A second human annotator (no involvement in operator design) labeled a blind,
+stratified 50-item subset of the validity gold: 25 paraphrase-equivalence (Task A)
+and 25 perturbation-faithfulness items (Task B, 5 per adversarial operator including
+citation_relocation). Same rubric and item format as the first annotator. Packet:
+validation/second_annotator/. Scored by scripts/second_annotator_score.py.
+
+Agreement with the FIRST annotator:
+  Task B perturbation faithfulness : 25/25 agree (100%)
+  Task A paraphrase equivalence     : 23/25 agree (92%)
+  Combined balanced faithfulness gold (50, =25 should-be-faithful + 25 should-be-
+    unfaithful): 48/50 agree (96%), Cohen's kappa = 0.920 ("almost perfect").
+
+Interpretation:
+- The combined kappa 0.920 is the headline (balanced classes; directly comparable to
+  the human-vs-Mistral kappa = 0.891 already reported). Two independent humans agree
+  slightly MORE than human-vs-model.
+- Task-A kappa in isolation is degenerate (near-uniform "equivalent" marginals; the
+  kappa paradox), so we report Task-A raw agreement (92%), not its kappa.
+- The 2 Task-A disagreements are borderline paraphrase calls, NOT faithfulness errors:
+  PN-029 (annotator 2 accepted a typo normalization "commission"->"commitment" as
+  meaning-preserving; annotator 1 did not) and PN-097 (annotator 2 flagged an added
+  "Unlike the EU" clause as a content change; annotator 1 accepted it). Both are
+  Task-A equivalence judgments; Task-B faithfulness agreement was perfect.
+
+This closes the single-annotator limitation: the validity gold is now corroborated by
+a second INDEPENDENT human, not only a model proxy.

@@ -17,6 +17,24 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+
+def _select_device() -> str:
+    """Device for AlignScore. Opt-in via JFRE_DEVICE (cpu|mps|cuda).
+
+    Defaults to cpu to preserve the historical pilot configuration. Set
+    JFRE_DEVICE=mps to use Apple Silicon GPU for heavier re-runs.
+    """
+    want = os.environ.get("JFRE_DEVICE", "cpu").lower()
+    if want == "mps":
+        try:
+            import torch
+            if torch.backends.mps.is_available():
+                return "mps"
+        except Exception:
+            pass
+        return "cpu"
+    return want
+
 # Apply monkey patches before alignscore imports
 import transformers
 import torch as _torch
@@ -35,6 +53,13 @@ _THRESHOLD = 0.5
 
 @lru_cache(maxsize=1)
 def _scorer():
+    # Re-apply the AdamW shim here: loading HHEM (trust_remote_code) reloads the
+    # transformers module object and wipes the module-level patch above, after which
+    # alignscore's `from transformers import AdamW` (removed in transformers 4.x) fails.
+    # Re-applying immediately before the import makes AlignScore robust to judge load order.
+    import transformers as _t
+    import torch as _tt
+    _t.AdamW = _tt.optim.AdamW
     from alignscore import AlignScore
 
     ckpt = Path(_CKPT_REL).resolve()
@@ -47,7 +72,7 @@ def _scorer():
     return AlignScore(
         model="roberta-large",
         batch_size=8,
-        device="cpu",
+        device=_select_device(),
         ckpt_path=str(ckpt),
         evaluation_mode="nli_sp",
     )

@@ -1,0 +1,148 @@
+
+======================================================================
+  PILOT: main_preview  (results/preview_pilot)
+======================================================================
+
+[1] SEEDS
+    Records: 768
+    Distinct seed_ids: 768
+    Duplicates: 0
+    ACCEPTED (passed Phase 1 filter): 500
+    Rejected: 268
+
+[2] PERTURBATIONS
+    Records: 2500
+    Distinct (seed, op) keys: 2500
+    Duplicates: 0
+    By operator:
+      distractor_parroting       total=500  rule_failed=288  rule_passed=212
+      entity_swap                total=500  rule_failed=159  rule_passed=341
+      hedge_insertion            total=500  rule_failed=9  rule_passed=491
+      numeric_drift              total=500  rule_failed=431  rule_passed=69
+      paraphrase_null            total=500  rule_failed=230  rule_passed=270
+
+[3] VERDICTS
+    Records: 15285
+    Distinct (seed, op, judge) keys: 15285
+    Duplicates: 0
+    Verdict values:
+      error           198
+      faithful        6763
+      unfaithful      8324
+    Judges seen:
+      alignscore_large               2004
+      claude_opus_4_7                358  (LEGACY)
+      claude_sonnet_4_6              2004
+      faithjudge_style_sonnet        2004
+      glm_4_7_cerebras               353  (LEGACY)
+      hhem_2_1_open                  2151
+      minicheck_flan_t5_large        2079
+      mistral_large_2                2151
+      qwen3_235b_cerebras            177  (LEGACY)
+      ragas_style_sonnet             2004
+
+[4] ERROR ANALYSIS (verdicts with metadata.error)
+    Judge                            Errors     TotalCalls   ErrRate   
+    alignscore_large                 196        2004         9.8%
+    claude_opus_4_7                  1          358          0.3%
+    claude_sonnet_4_6                3          2004         0.1%
+    faithjudge_style_sonnet          4          2004         0.2%
+    glm_4_7_cerebras                 126        353          35.7%
+    hhem_2_1_open                    0          2151         0.0%
+    minicheck_flan_t5_large          0          2079         0.0%
+    mistral_large_2                  5          2151         0.2%
+    qwen3_235b_cerebras              0          177          0.0%
+    ragas_style_sonnet               0          2004         0.0%
+
+[5] PHASE 1 / PHASE 2 CONSISTENCY
+    Accepted seeds without perturbations: 0
+    Perturbations for non-accepted seeds: 0
+
+[6] CELL COVERAGE (accepted seeds × rule-passed operators, 7 headline judges)
+    Expected cells: 1383
+    Fully scored (all 7 judges clean): 1381
+    Partially scored (some clean, some missing/errored): 2
+    Zero clean scores: 0
+    By operator (full / partial):
+      distractor_parroting       full=212  partial=0
+      entity_swap                full=340  partial=1
+      hedge_insertion            full=491  partial=0
+      numeric_drift              full=68  partial=1
+      paraphrase_null            full=270  partial=0
+
+[7] CLEAN PHASE COVERAGE (accepted seeds with all 7 clean verdicts)
+    Accepted seeds: 500
+    With all 7 clean verdicts: 418
+
+======================================================================
+  PILOT: citation_relocation  (results/citation_relocation_pilot)
+======================================================================
+
+[1] SEEDS
+    Records: 182
+    Distinct seed_ids: 182
+    Duplicates: 0
+    ACCEPTED (passed Phase 1 filter): 100
+    Rejected: 82
+
+[2] PERTURBATIONS
+    Records: 100
+    Distinct (seed, op) keys: 100
+    Duplicates: 0
+    By operator:
+      citation_relocation        total=100  rule_failed=0  rule_passed=100
+
+[3] VERDICTS
+    Records: 1974
+    Distinct (seed, op, judge) keys: 1974
+    Duplicates: 0
+    Verdict values:
+      error           83
+      faithful        1103
+      unfaithful      788
+    Judges seen:
+      alignscore_large               282
+      claude_sonnet_4_6              282
+      faithjudge_style_sonnet        282
+      hhem_2_1_open                  282
+      minicheck_flan_t5_large        282
+      mistral_large_2                282
+      ragas_style_sonnet             282
+
+[4] ERROR ANALYSIS (verdicts with metadata.error)
+    Judge                            Errors     TotalCalls   ErrRate   
+    alignscore_large                 82         282          29.1%  *** HIGH ***
+    claude_sonnet_4_6                1          282          0.4%
+    faithjudge_style_sonnet          0          282          0.0%
+    hhem_2_1_open                    0          282          0.0%
+    minicheck_flan_t5_large          0          282          0.0%
+    mistral_large_2                  1          282          0.4%
+    ragas_style_sonnet               0          282          0.0%
+
+[5] PHASE 1 / PHASE 2 CONSISTENCY
+    Accepted seeds without perturbations: 0
+    Perturbations for non-accepted seeds: 0
+
+[6] CELL COVERAGE (accepted seeds × rule-passed operators, 7 headline judges)
+    Expected cells: 100
+    Fully scored (all 7 judges clean): 99
+    Partially scored (some clean, some missing/errored): 1
+    Zero clean scores: 0
+    By operator (full / partial):
+      citation_relocation        full=99  partial=1
+
+[7] CLEAN PHASE COVERAGE (accepted seeds with all 7 clean verdicts)
+    Accepted seeds: 100
+    With all 7 clean verdicts: 100
+
+======================================================================
+  CITED-ANNOTATION CACHE
+======================================================================
+
+  Total cache lines: 203
+  Distinct seed_ids: 203
+  Duplicates: 0
+  Errored: 0
+  Empty cited_answer: 0
+  Has cited but <2 distinct citations (unusable for citation_relocation): 20
+  Usable: 183
