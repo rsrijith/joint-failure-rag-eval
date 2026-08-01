@@ -1,125 +1,177 @@
 # Release checklist — the steps only the owner can run
 
-Everything in this file was deliberately **not** executed. No push, no upload, no
-tag, no release, no remote on the leaderboard, nobody contacted. Run these
-yourself, in order.
+**Rewritten 2026-08-01.** The earlier version was written before the repo was
+published and had gone stale in ways that mattered: it listed already-completed
+work as blocking, told you to install `jfre` from TestPyPI after the distribution
+had been renamed to `fidecite`, and — worst — carried a `git merge --ff-only
+prep/publication-readiness && git push origin main` command that **cannot work and
+whose obvious recovery destroys the public history**. That command is gone. See
+"Retired steps" at the foot for what was removed and why, so nothing here gets
+re-added from an old copy.
 
-## 0a. Decide the copyright line
+Target date for the remaining steps: **2026-08-15**, timed to the GroundLM
+decision. See "Does GroundLM actually gate this?" below — the honest answer is no.
 
-`LICENSE` in this repo says **"Copyright (c) 2026 The Authors"**, which is a
-leftover from double-anonymous submission. Commit `0fbfe41` de-anonymized the
-repo, and `pyproject.toml` and `CITATION.cff` both now name Srijith Ravikumar, so
-the LICENSE is the last anonymous artifact. `../fidecite-leaderboard/LICENSE` was
-copied verbatim and says the same thing, to keep the two consistent rather than
-guess.
+---
 
-An MIT grant with no identified copyright holder is weak: a downstream user
-cannot tell who granted the licence. Decide the line and change it in **both**
-files before publishing. This was left alone on purpose because a copyright
-attribution is the owner's call, not a cleanup task.
+## Already done — do not redo
 
-## 0. Decide the distribution name first
+| Step | Status |
+|---|---|
+| LICENSE copyright holder named (was "The Authors") | DONE `eb235ec`, both repos |
+| Distribution name decided and applied | DONE `bb4c344` — `fidecite` on PyPI, `import jfre` |
+| PyPI name availability checked | DONE 2026-08-01 — 404 for both `fidecite` and `jfre`. **Not a reservation. Re-check at step 1.** |
+| Public `main` carries the working package | DONE — PR #1 merged `7252375` |
+| `git+https://` install verified against the public URL | DONE — clean venv, quickstart output matched |
+| First-contact example repaired | DONE `eb235ec` — was printing 0% clean-pass, reading as though the fix destroys your judge |
 
-Read `dist-name.md`. If you want `fidecite` on PyPI, apply `dist-name.patch`
-before step 3, because the first upload fixes the name permanently. Check
-`https://pypi.org/project/fidecite/` for availability.
+---
 
-## 1. Blocker: the public default branch is 6 commits behind
+## Does GroundLM actually gate this?
 
-`origin/main` still holds the pre-adoption research code: `jfre` 0.0.1, eight
-hard dependencies, and **no `jfre/audit.py` and no `jfre/fix.py`**. So
-`pip install "git+https://github.com/rsrijith/joint-failure-rag-eval.git"`
-installs a package with no `audit_judge` and no `make_seed`, and the README
-quickstart raises `ImportError` for anyone who tries it today.
+**No.** `CITATION.cff` deliberately claims no venue and carries
+`notes: "Citation block finalized at paper acceptance / public preprint."`, and
+`date-released` is commented out. So nothing in the release has to be redone
+depending on the decision.
 
-The README's install line is written for the state *after* this push. Push first,
-or the documented command is wrong.
+What the decision changes is only what you can *add*:
+
+- **If GroundLM accepts** — put the venue into `CITATION.cff`'s
+  `preferred-citation` and mention the talk in the GitHub release body.
+- **If it does not** — release exactly as written here. Say nothing about a venue.
+
+So if the decision slips past mid-August, **release anyway**. Do not hold the
+package for it.
+
+---
+
+## The run, in order. The order matters twice.
+
+Zenodo must be enabled **before** the GitHub release or no DOI is minted, and the
+README must be finalized **before** the tag so the tag points at what people
+actually install.
+
+### 1. Pre-flight
 
 ```bash
-cd joint-failure-rag-eval
-git checkout main
-git merge --ff-only prep/publication-readiness   # review the diff first
+cd ~/Documents/EB1/GitHub/joint-failure-rag-eval
+git checkout main && git pull
+git status --porcelain          # must be empty
+curl -s -o /dev/null -w "%{http_code}\n" https://pypi.org/pypi/fidecite/json   # want 404
+```
+
+A `200` means somebody took the name since 2026-08-01. Stop and re-plan if so.
+
+### 2. Finalize the README install block
+
+The Install section and the top-of-file install line are written in the
+pre-publication `git+https://` form, with a `POST-RELEASE` HTML comment stating
+exactly what to delete. Apply it now, so the tag captures the published form:
+
+- top of README: `pip install fidecite`
+- Install section: the three plain `pip install fidecite` / `"fidecite[judges]"` /
+  `"fidecite[data]"` lines
+- delete the `POST-RELEASE` comment itself
+- same in `QUICKSTART.md`
+
+```bash
+git commit -am "README/QUICKSTART: switch to the published pip install fidecite form"
 git push origin main
 ```
 
-Then confirm the install path actually works, from a scratch venv outside the repo:
+### 3. Enable Zenodo — BEFORE the release, not after
+
+1. Sign in at https://zenodo.org/account/settings/github/ with GitHub.
+2. Toggle **on** for `rsrijith/joint-failure-rag-eval`.
+
+Zenodo only captures releases created *after* the toggle is on. Miss this and the
+fix is cutting a throwaway `v0.1.1` just to trigger capture.
+
+### 4. Build clean and rehearse on TestPyPI
 
 ```bash
-python3 -m venv /tmp/verify && /tmp/verify/bin/python -m pip install \
-  "git+https://github.com/rsrijith/joint-failure-rag-eval.git"
-cd /tmp && /tmp/verify/bin/python -c "from jfre import make_seed, audit_judge; print('ok')"
+rm -rf dist build *.egg-info
+python -m build
+twine check --strict dist/*     # expect PASSED on both artifacts
 ```
 
-## 2. Tag
+Artifacts are now `fidecite-0.1.0-py3-none-any.whl` and `fidecite-0.1.0.tar.gz`.
+
+TestPyPI is the only rehearsal you get. Note the install name is `fidecite` and
+the import is `jfre` — that split is the thing being rehearsed:
+
+```bash
+twine upload --repository testpypi dist/*
+python3 -m venv /tmp/tpypi && /tmp/tpypi/bin/python -m pip install \
+  --index-url https://test.pypi.org/simple/ fidecite
+cd /tmp && /tmp/tpypi/bin/python -c "from jfre import make_seed, audit_judge; print('ok')"
+```
+
+**Run that last line from `/tmp`, not the repo.** From the repo root `import jfre`
+silently reads the source tree instead of site-packages and the check passes
+regardless — this exact false pass happened during the 2026-07-31 integration.
+
+### 5. Tag
 
 ```bash
 git tag -a v0.1.0 -F PUBLICATION_NOTES/tag-message-v0.1.0.txt
 git push origin v0.1.0
 ```
 
-## 3. Publish to PyPI
+### 6. Publish to PyPI — irreversible
 
-Build from a clean tree so no stale artifact ships:
-
-```bash
-rm -rf dist build *.egg-info
-python -m build
-twine check --strict dist/*
-```
-
-TestPyPI first. This is the only rehearsal you get:
-
-```bash
-twine upload --repository testpypi dist/*
-python3 -m venv /tmp/tpypi && /tmp/tpypi/bin/python -m pip install \
-  --index-url https://test.pypi.org/simple/ jfre
-cd /tmp && /tmp/tpypi/bin/python -c "from jfre import audit_judge; print('ok')"
-```
-
-Then the real upload. Use a project-scoped API token, or configure Trusted
-Publishing so no token lives on disk:
+Use a project-scoped API token or Trusted Publishing so no token sits on disk.
 
 ```bash
 twine upload dist/*
 ```
 
-After it lands, revert the README install block to the plain `pip install fidecite`
-form. The `POST-RELEASE` HTML comment in the Install section says exactly what to
-delete.
+Then verify as a stranger, again from outside the repo:
 
-## 4. GitHub release
+```bash
+python3 -m venv /tmp/real && /tmp/real/bin/python -m pip install fidecite
+cd /tmp && /tmp/real/bin/python -c "import jfre; print(jfre.__version__)"
+```
 
-Create the release against tag `v0.1.0`. Body is
+### 7. GitHub release — this mints the DOI
+
+Create it against tag `v0.1.0`. Body is
 `PUBLICATION_NOTES/release-body-v0.1.0.md` — **read its trailing HTML comment and
-delete it** before pasting, and fix the install line to match what you actually
-published. Attach `dist/fidecite-0.1.0-py3-none-any.whl` and
-`dist/jfre-0.1.0.tar.gz`.
+delete it before pasting.** Attach both `dist/fidecite-0.1.0-py3-none-any.whl` and
+`dist/fidecite-0.1.0.tar.gz`. If GroundLM accepted, add the venue line here.
 
-## 5. Zenodo DOI
+### 8. Finish `CITATION.cff`, then push
 
-1. Sign in to Zenodo with GitHub, at https://zenodo.org/account/settings/github/.
-2. Flip the toggle **on** for `rsrijith/joint-failure-rag-eval`. Zenodo only
-   captures releases created *after* the toggle is on, so do this **before**
-   step 4, or cut a `v0.1.1` afterwards to trigger capture.
-3. Publishing the release mints the DOI. Zenodo reads `CITATION.cff` for the
-   metadata, which is why it carries `type: software` and the abstract.
-4. Put the concept DOI (the version-independent one) back into `CITATION.cff` as
-   `doi:` and into the README, then push.
+- `doi:` — the **concept** DOI from Zenodo (version-independent), not the
+  version-specific one.
+- `date-released:` — uncomment, set to the tag date.
+- `orcid:` — only if you have registered one. **A fabricated ORCID resolves to a
+  stranger.** Leave the placeholders commented otherwise.
+- `preferred-citation:` — replace the stub at paper acceptance.
 
-## 6. Finish `CITATION.cff`
+Put the DOI in the README too, then commit and push.
 
-- Uncomment `date-released` and set it to the tag date.
-- Add `doi:` from step 5.
-- Add `orcid:` in both author blocks once you have one, from
-  https://orcid.org/register. The placeholders are commented out and marked; a
-  fabricated ORCID resolves to a stranger, so leave them commented until real.
-- Replace `preferred-citation` with the real paper block at acceptance. It is
-  currently a stub carrying `notes:` to that effect.
+### 9. Register `jfre` as an alias distribution
 
-## 7. Leaderboard
+Only after `fidecite` is live. A stub distribution named `jfre` whose sole
+dependency is `fidecite`, so anyone who guesses the install name from an
+`import jfre` snippet still lands correctly. Mark its description as an alias so
+it does not read as a squat. Rationale in `dist-name.md`.
 
-`../fidecite-leaderboard` has a local git repo with one commit and **no remote,
-by design**. To publish:
+---
+
+## Separate track: the leaderboard
+
+**Its real prerequisite is the Hugging Face dataset, not any packaging step.**
+`rsrijith/fidecite` is a placeholder in `../fidecite-leaderboard/app.py` and
+`scripts/submit.py` and 404s today, so a stranger can only submit with
+`--seeds my_seeds.jsonl` against their own data, and those rows are not comparable
+to the study's. `submit.py` now exits with that guidance rather than an obscure hub
+error.
+
+**The dataset must ship with `dataset/NOTICES.md`.** HotpotQA-derived rows are
+CC-BY-SA 4.0 and the share-alike clause propagates, so they cannot be bundled into
+this MIT repo. That is a licence conflict, not an attribution lapse.
 
 ```bash
 cd ../fidecite-leaderboard
@@ -127,72 +179,47 @@ git remote add origin https://github.com/rsrijith/fidecite-leaderboard.git
 git push -u origin main
 ```
 
-For the Hugging Face Space, add the Space as a second remote and push there too.
-The Space needs `app.py` and `requirements.txt` at the root, which is how the
-directory is laid out.
+Before pushing, re-confirm `reference_judges.csv`'s per-judge FNRs against the
+camera-ready table.
 
-Before pushing: `reference_judges.csv` carries the study's per-judge FNRs and the
-README flags them for re-confirmation against the camera-ready table. The dataset
-id `rsrijith/fidecite` in `app.py` and `scripts/submit.py` is a **placeholder**
-and 404s until the Hugging Face dataset is published. Submissions cannot work
-until that dataset exists.
+## Separate track: good first issues
 
-## 8. Good first issues
+`.github/ISSUE_DRAFTS/` holds three drafts, unfiled. Paste each into a new issue,
+add the `good first issue` label, then either delete the directory or keep it as
+the backlog.
 
-`.github/ISSUE_DRAFTS/` holds three drafts. Nothing was filed. Paste each into a
-new issue and add the `good first issue` label. Delete the drafts directory
-afterwards, or keep it as the backlog.
+---
 
-## What was verified during the prep pass
+## Known issues, deliberately left
 
-- `pytest tests/` — 14 passed.
-- `python -m build` — built `jfre-0.1.0-py3-none-any.whl` and `jfre-0.1.0.tar.gz`.
-- `twine check --strict dist/*` — PASSED on both.
-- Clean venv, wheel installed with no extras, `pip list` showed `jfre` and `pip`
-  only, README quickstart run from outside the repo reproduced its documented
-  output. Both `examples/` scripts ran there too.
-- `cffconvert --validate` — valid against CFF schema 1.2.0.
-- The `fidecite` rename dry-run built, installed clean, kept `import jfre`
-  working, and passed `twine check --strict`. Reverted; nothing renamed.
-- The leaderboard submission flow was walked end to end as a stranger would, from
-  the clean venv with only the wheel installed: wrote a judge module and a
-  three-seed JSONL, ran `scripts/submit.py`, got a valid entry, `scripts/validate.py`
-  passed it, `scripts/build_table.py` put it on the board as row 8. Then removed
-  and the board regenerated back to the 7 study rows. `validate.py` was also
-  checked against deliberately broken files and caught every planted error.
-
-## What was NOT verified
-
-- **PyPI name availability**, for `jfre` or `fidecite`. No index was queried.
-- **The `git+https://` install**, because it requires `origin/main` to be pushed
-  first. See step 1.
-- Anything needing API keys or the Hugging Face dataset: the seven reference
-  judges and the seed loaders. The leaderboard flow was verified with
-  `--seeds my_seeds.jsonl`; the published-set path through `load_dataset` could not
-  be exercised because the dataset does not exist yet.
-- The leaderboard Gradio app was not launched. `gradio` was not installed.
-
-## Known issues left alone on purpose
-
-- **`LICENSE` names no copyright holder** ("The Authors"). See section 0a. Same in
-  the leaderboard's copy.
-- **The Hugging Face dataset does not exist.** `rsrijith/fidecite` is a placeholder
-  in `../fidecite-leaderboard/app.py` and `scripts/submit.py`. Until it is
-  published, a stranger can only submit with `--seeds my_seeds.jsonl` against
-  their own data, and those rows are not comparable to the study's. Publishing the
-  dataset is the real prerequisite for advertising the leaderboard, more than any
-  packaging step.
-- **`examples/audit_your_own_judge.py` prints a 0% clean-pass rate** for the fixed
-  judge, because `toy_attribution_llm` in that file is a stub that rejects
-  everything once the citations move. The FNR half of the demonstration is
-  correct; the clean-pass half reads as if the fix destroys the judge, which is
-  the opposite of what `FIX.md` reports. Worth making the stub pass
-  correctly-cited answers before anyone runs the example as their first contact
-  with the tool.
+- **`jfre/judges/glm_cerebras_judge.py` ships in the wheel** though commit
+  `e04cf4f` dropped GLM from the paper's seven-judge set. **Decision 2026-07-31:
+  keep it.** `scripts/smoke_three_judges.py` imports it, so deleting it breaks a
+  research script. It is unimported dead weight in the distribution, which is
+  cheaper than a broken script. Revisit only if the wheel size matters.
 - **`jfre/judges/` uses a different interface** from the public `Judge` callable:
-  `score(seed, answer_to_judge, operator) -> JudgeVerdict`. Not a defect, but a
-  contributor writing an adapter will notice, so `CONTRIBUTING.md` explains which
-  shape to use. A thin conversion helper would remove the confusion.
-- **`jfre/judges/glm_cerebras_judge.py` ships in the wheel** but commit `e04cf4f`
-  dropped GLM from the paper and the reference set is seven judges. Dead code in a
-  published distribution. Either delete it or note why it stays.
+  `score(seed, answer_to_judge, operator) -> JudgeVerdict`. Not a defect;
+  `CONTRIBUTING.md` explains which shape an adapter should use. A thin conversion
+  helper would remove the confusion.
+- **Anything needing API keys or the HF dataset is unverified**: the seven
+  reference judges, the seed loaders, and the `load_dataset` path through the
+  leaderboard. The Gradio app has never been launched.
+
+---
+
+## Retired steps — removed 2026-08-01, do not re-add
+
+- **"Decide the copyright line."** Done in `eb235ec`.
+- **"Decide the distribution name first."** Done in `bb4c344`.
+- **"Blocker: the public default branch is 6 commits behind," with
+  `git merge --ff-only prep/publication-readiness && git push origin main`.**
+  Removed as **dangerous**. The local branches were an *orphan* history sharing no
+  commit with `origin/main`, so that merge refuses outright, the push is rejected,
+  and forcing past the rejection replaces a 123-file public research repo with a
+  56-file packaging slice. Resolved instead by branching *from* `origin/main` and
+  adding the packaging layer on top: PR #1, merged as `7252375`, nothing deleted.
+- **"PyPI name availability — NOT verified."** Checked 2026-08-01.
+- **"The `git+https://` install — NOT verified."** Verified against the public URL
+  after PR #1 merged.
+- **"`examples/audit_your_own_judge.py` prints a 0% clean-pass rate."** Fixed in
+  `eb235ec`.
