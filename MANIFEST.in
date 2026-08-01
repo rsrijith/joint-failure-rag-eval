@@ -1,0 +1,21 @@
+# The sdist is what someone unpacks to read or reproduce the work, so ship the
+# docs and the runnable examples alongside the code. Without this, setuptools
+# includes only README.md and LICENSE and everything the README links to is
+# missing from the tarball.
+include CHANGELOG.md
+include CITATION.cff
+include CONTRIBUTING.md
+include FIX.md
+include METHODOLOGY.md
+include POST_HOC_PIVOT.md
+include QUICKSTART.md
+include MANIFEST.in
+recursive-include examples *.py
+recursive-include dataset *.md
+recursive-include tests *.py
+
+# Not in the sdist: publication logistics and unfiled issue drafts are for the
+# repository, not for people installing the package.
+prune PUBLICATION_NOTES
+prune .github
+exclude .env.example

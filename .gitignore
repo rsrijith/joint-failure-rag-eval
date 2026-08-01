@@ -70,3 +70,8 @@ texput.log
 *.log
 *.numbers
 *.zip
+
+# build artifacts
+dist/
+build/
+*.egg-info/
