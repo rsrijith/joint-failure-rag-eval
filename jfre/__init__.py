@@ -8,7 +8,7 @@ installing the reference judges (which pull torch / transformers / API SDKs).
     from jfre.fix import ATTRIBUTION_AWARE_PROMPT, make_attribution_judge
 
 Install the reference judges (Claude, Mistral, HHEM, MiniCheck, AlignScore,
-RAGAS-style, FaithJudge-style) only if you want them: ``pip install "jfre[judges]"``.
+RAGAS-style, FaithJudge-style) only if you want them: ``pip install "fidecite[judges]"``.
 
 Everything below the public API is optional-import convenience for the research
 scripts in ``scripts/``. Each block is guarded, so importing ``jfre`` in an

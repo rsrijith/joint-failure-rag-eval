@@ -1,5 +1,17 @@
 # Recommendation: publish the distribution as `fidecite`, keep the import `jfre`
 
+> **DECIDED AND APPLIED 2026-08-01: the distribution name is `fidecite`.**
+> `pyproject.toml` now says `name = "fidecite"`; the import package stays `jfre`.
+> `dist-name.patch` has been applied and is kept only as a record of the change.
+> **PyPI availability was verified on 2026-08-01, closing the open question below:**
+> `pypi.org/pypi/fidecite/json` and `pypi.org/pypi/jfre/json` both return 404, so
+> both names were unclaimed at that moment. Availability is not a reservation, so
+> re-check immediately before upload. Every install instruction in the repo
+> (README, QUICKSTART, release body, release checklist, the dataset tool's
+> docstrings) was updated to `pip install fidecite` in the same pass; import lines
+> were deliberately left as `jfre`.
+
+
 **Status: NOT APPLIED.** The change is staged as `dist-name.patch` in this
 directory and nothing in the repo has been renamed. Claiming a name on PyPI is
 one-shot and effectively irreversible (a name cannot be transferred to a
@@ -54,9 +66,7 @@ integrations. Renaming the import package would break them silently.
 - Every existing install instruction in the wild would need updating. Today that
   is only this repo and the leaderboard, so the cost is near zero, but it rises
   the moment a paper or a blog post is public.
-- PyPI availability of `fidecite` is **unverified**. No package index was queried
-  during this pass. Check `https://pypi.org/project/fidecite/` before committing
-  to it.
+- ~~PyPI availability of `fidecite` is **unverified**.~~ **CHECKED 2026-08-01: available (HTTP 404 on the JSON API), as is `jfre`.** Availability is not a reservation; re-check at upload time.
 
 **Mitigation for the two-names problem.** Register `jfre` on PyPI too, as a stub
 distribution whose only dependency is `fidecite`. Then `pip install jfre` works
@@ -64,7 +74,7 @@ for anyone who guesses from the import line. Do this only after `fidecite` is
 published, and mark the stub's description as an alias so it does not look like a
 squat.
 
-## If you decline the rename
+## If you decline the rename (moot — the rename was accepted 2026-08-01)
 
 Do nothing. `pyproject.toml` already says `name = "jfre"` and the build works.
 Delete this directory's `dist-name.patch` so a later session does not apply it by

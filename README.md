@@ -14,7 +14,7 @@ named diagnostic it implements.
 ```bash
 # Zero heavy dependencies; bring your own judge. Not on PyPI yet, so install from source:
 pip install "git+https://github.com/rsrijith/joint-failure-rag-eval.git"
-# POST-RELEASE this becomes a one-liner:  pip install jfre
+# POST-RELEASE this becomes a one-liner:  pip install fidecite
 ```
 
 ```python
@@ -117,15 +117,15 @@ audit_judge(judge, seeds)                  # miss rate should drop toward ~3%
 
 ```bash
 pip install "$JFRE"                    # BYO-judge audit + the fix (stdlib only)
-pip install "jfre[judges] @ $JFRE"     # + the seven reference judges (torch, SDKs)
-pip install "jfre[data] @ $JFRE"       # + HotpotQA / ExpertQA / PubMedQA loaders
+pip install "fidecite[judges] @ $JFRE"  # + the seven reference judges (torch, SDKs)
+pip install "fidecite[data] @ $JFRE"    # + HotpotQA / ExpertQA / PubMedQA loaders
 ```
 
 <!-- POST-RELEASE: when the distribution is published, delete the JFRE line above
      and drop the ` @ $JFRE` suffixes, leaving:
-       pip install jfre
-       pip install "jfre[judges]"
-       pip install "jfre[data]"
+       pip install fidecite
+       pip install "fidecite[judges]"
+       pip install "fidecite[data]"
      If the distribution ships under the name `fidecite` (see
      PUBLICATION_NOTES/dist-name.md), the import stays `import jfre` and only the
      three pip lines change to `pip install fidecite`, `"fidecite[judges]"`, etc. -->

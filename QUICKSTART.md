@@ -10,7 +10,7 @@ support it (while the claim is supported by some *other* passage).
 ```bash
 # Not on PyPI yet; install from the repo.
 pip install "git+https://github.com/rsrijith/joint-failure-rag-eval.git"
-# POST-RELEASE:  pip install jfre
+# POST-RELEASE:  pip install fidecite
 ```
 
 ## 2. Wrap your judge behind the adapter

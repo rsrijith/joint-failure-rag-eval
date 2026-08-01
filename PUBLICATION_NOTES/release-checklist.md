@@ -83,7 +83,7 @@ Publishing so no token lives on disk:
 twine upload dist/*
 ```
 
-After it lands, revert the README install block to the plain `pip install jfre`
+After it lands, revert the README install block to the plain `pip install fidecite`
 form. The `POST-RELEASE` HTML comment in the Install section says exactly what to
 delete.
 
@@ -92,7 +92,7 @@ delete.
 Create the release against tag `v0.1.0`. Body is
 `PUBLICATION_NOTES/release-body-v0.1.0.md` — **read its trailing HTML comment and
 delete it** before pasting, and fix the install line to match what you actually
-published. Attach `dist/jfre-0.1.0-py3-none-any.whl` and
+published. Attach `dist/fidecite-0.1.0-py3-none-any.whl` and
 `dist/jfre-0.1.0.tar.gz`.
 
 ## 5. Zenodo DOI

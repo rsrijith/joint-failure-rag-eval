@@ -5,7 +5,7 @@ reconstructed from the seed loaders (the perturbation files do not store
 passages), and writes a single JSONL matching the card in ``dataset/README.md``.
 
 Run this in an environment that has the seed datasets available (the study repo,
-with ``jfre[data]`` installed and ``data/raw`` populated). It only READS the
+with ``fidecite[data]`` installed and ``data/raw`` populated). It only READS the
 perturbations and seeds; it writes the dataset under ``dataset/data/``.
 
     python tools/build_fidecite_dataset.py \
@@ -30,10 +30,10 @@ from pathlib import Path
 def _load_passages_by_seed_id() -> dict[str, list[str]]:
     """Reconstruct seed_id -> passages from the deterministic loaders.
 
-    Loaders are imported lazily so this file imports without ``jfre[data]``.
+    Loaders are imported lazily so this file imports without ``fidecite[data]``.
     """
     mapping: dict[str, list[str]] = {}
-    from jfre.seeds import expertqa, hotpotqa  # requires jfre[data] + data/raw
+    from jfre.seeds import expertqa, hotpotqa  # requires fidecite[data] + data/raw
 
     for loader, n in ((expertqa.load, 1500), (hotpotqa.load, 1000)):
         try:

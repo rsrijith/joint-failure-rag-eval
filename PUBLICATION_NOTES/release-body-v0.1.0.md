@@ -10,7 +10,7 @@ This release ships the audit, the attack, and the fix.
 ## Install
 
 ```bash
-pip install jfre        # zero heavy dependencies; bring your own judge
+pip install fidecite    # zero heavy dependencies; bring your own judge
 ```
 
 ## Audit your own judge in a few lines
@@ -77,7 +77,7 @@ see [`dataset/NOTICES.md`](dataset/NOTICES.md).
 ---
 
 <!-- PRE-PUBLISH CHECKS, delete before pasting into the GitHub release form:
-     1. The `pip install jfre` line above is the POST-PYPI form. If PyPI upload
+     1. The `pip install fidecite` line above is the POST-PYPI form. If PyPI upload
         has not happened, change it to:
           pip install "git+https://github.com/rsrijith/joint-failure-rag-eval.git"
      2. If the distribution ships as `fidecite` (PUBLICATION_NOTES/dist-name.md),
