@@ -1,0 +1,20 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 0487446..994def7 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,9 +1,10 @@
+ [project]
+-# NOTE: `name` is the PyPI *distribution* name; the import package is always
+-# `jfre`. See PUBLICATION_NOTES/dist-name.md for the recommended rename to
+-# `fidecite` (unapplied; the owner decides, because claiming a PyPI name is
+-# one-shot and irreversible).
+-name = "jfre"
++# The PyPI *distribution* name is `fidecite`; the import package stays `jfre`.
++# Users run `pip install fidecite` and then `import jfre`, the same split as
++# `pip install scikit-learn` / `import sklearn`. Do not rename the import
++# package: `jfre` is already referenced by third-party integrations, as is the
++# metric name `citation-faithfulness` / `CitationFaithfulnessMetric`.
++name = "fidecite"
+ version = "0.1.0"
+ description = "Audit a RAG faithfulness judge for the citation-attribution blind spot, and the drop-in prompt fix."
+ readme = "README.md"

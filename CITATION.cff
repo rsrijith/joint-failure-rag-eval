@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software or dataset, please cite it as below."
+title: "jfre / Fidecite: citation-attribution faithfulness audit for RAG judges"
+type: software
+authors:
+  - family-names: "Ravikumar"
+    given-names: "Srijith"
+    affiliation: "Independent Researcher"
+    # ORCID PLACEHOLDER — no ORCID on record. Register one at https://orcid.org
+    # and uncomment, keeping the full URI form. Do not invent an identifier.
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+abstract: >-
+  Audits a retrieval-augmented-generation faithfulness judge for the
+  citation-attribution blind spot. The Fidecite citation_relocation operator
+  re-points every [N] citation marker to a passage that does not support its
+  claim, while the claim stays supported by some other passage, and reports how
+  often the judge is still fooled. Ships the attribution-aware prompt fix.
+repository-code: "https://github.com/rsrijith/joint-failure-rag-eval"
+url: "https://github.com/rsrijith/joint-failure-rag-eval"
+license: MIT
+version: "0.1.0"
+# Uncomment and set to the tag date when v0.1.0 is actually tagged and released.
+# The tag does not exist yet, so no date is asserted here.
+# date-released: "2026-07-29"
+keywords:
+  - rag
+  - faithfulness
+  - hallucination-detection
+  - attribution
+  - llm-as-judge
+preferred-citation:
+  type: article
+  title: "Citation-attribution is a shared blind spot of deployed RAG faithfulness judges"
+  authors:
+    - family-names: "Ravikumar"
+      given-names: "Srijith"
+      affiliation: "Independent Researcher"
+      # ORCID PLACEHOLDER — see the note in the software block above.
+      # orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  notes: "Citation block finalized at paper acceptance / public preprint."

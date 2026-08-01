@@ -1,0 +1,21 @@
+jfre 0.1.0 — Fidecite citation-attribution audit for RAG faithfulness judges
+
+Audit any RAG faithfulness judge for the citation-attribution blind spot, and
+apply the one-prompt fix. The core install is dependency-free: bring your own
+judge as a (question, passages, answer) -> bool callable.
+
+The Fidecite citation_relocation operator re-points every [N] citation marker
+with a fixed-point-free permutation, so each claim ends up attributed to a
+passage that does not support it while staying supported by some other passage.
+audit_judge reports the share of relocated answers the judge still passes: its
+attribution false-negative rate.
+
+API: audit_judge, make_seed, relocate_citations, AuditResult, Judge, plus
+jfre.fix.make_attribution_judge and ATTRIBUTION_AWARE_PROMPT.
+
+Reference judges (seven, behind the [judges] extra) and seed loaders (behind
+[data]) are needed only to reproduce the study.
+
+The import package is jfre. The metric name is citation-faithfulness.
+
+See CHANGELOG.md for the full 0.1.0 surface.

@@ -1,19 +1,78 @@
 [project]
+# NOTE: `name` is the PyPI *distribution* name; the import package is always
+# `jfre`. See PUBLICATION_NOTES/dist-name.md for the recommended rename to
+# `fidecite` (unapplied; the owner decides, because claiming a PyPI name is
+# one-shot and irreversible).
 name = "jfre"
-version = "0.0.1"
-description = "Joint-failure cross-judge evaluation for RAG faithfulness metrics"
-requires-python = ">=3.12"
+version = "0.1.0"
+description = "Audit a RAG faithfulness judge for the citation-attribution blind spot, and the drop-in prompt fix."
+readme = "README.md"
+requires-python = ">=3.10"
 license = { text = "MIT" }
-dependencies = [
+authors = [
+    { name = "Srijith Ravikumar" },
+]
+maintainers = [
+    { name = "Srijith Ravikumar" },
+]
+keywords = [
+    "rag",
+    "faithfulness",
+    "hallucination-detection",
+    "llm-evaluation",
+    "llm-as-judge",
+    "attribution",
+    "citation",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
+]
+
+# Core install is dependency-light on purpose: the "audit your own judge" path
+# and the attribution-aware fix use only the standard library.
+dependencies = []
+
+[project.optional-dependencies]
+# Convenience: auto-load a local .env.
+env = ["python-dotenv>=1.0"]
+# The seven reference judges (Claude, Mistral, FaithJudge/RAGAS-style, HHEM,
+# MiniCheck, AlignScore). Only needed to reproduce the study, not to BYO.
+judges = [
     "anthropic>=0.40",
+    "mistralai>=1.5",
+    "transformers>=4.46,<5.0",
+    "torch>=2.0",
+]
+# Seed dataset loaders (HotpotQA, ExpertQA, PubMedQA).
+data = [
     "datasets>=3.0",
     "huggingface_hub>=0.27",
     "numpy>=2.0",
     "pandas>=2.2",
-    "pydantic>=2.5",
-    "python-dotenv>=1.0",
-    "tqdm>=4.66",
 ]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/rsrijith/joint-failure-rag-eval"
+Repository = "https://github.com/rsrijith/joint-failure-rag-eval"
+Issues = "https://github.com/rsrijith/joint-failure-rag-eval/issues"
+Changelog = "https://github.com/rsrijith/joint-failure-rag-eval/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/rsrijith/joint-failure-rag-eval/blob/main/QUICKSTART.md"
+"The fix" = "https://github.com/rsrijith/joint-failure-rag-eval/blob/main/FIX.md"
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -21,4 +80,8 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["jfre*"]
-exclude = ["scripts*", "tests*", "data*", "results*"]
+exclude = ["scripts*", "tests*", "data*", "results*", "examples*", "tools*"]
+
+# Ship the PEP 561 marker so type checkers use the inline annotations.
+[tool.setuptools.package-data]
+jfre = ["py.typed"]
